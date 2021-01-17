@@ -1,9 +1,12 @@
 #include "ArduinoMaze.h"
+#include "A"
 
 Chassis * _chassis;
 LazerSystem * _lazer;
+SA comm;
 
 String path;
+
 void lMotorEncInterrupt()
 {
   (digitalRead(_chassis->getLeftMotor().getNEPin())) ? (_chassis->getLeftMotor().count -= _chassis->getLeftMotor().multi) : (_chassis->getLeftMotor().count += _chassis->getLeftMotor().multi);
@@ -17,6 +20,7 @@ void begin(){
   _chassis = new Chassis();
   _lazer = new LazerSystem();
   Serial.begin(115200);
+  Serial2.begin(9600);
   while (!Serial)
     delay(1);
   Serial.println("Begin!");
@@ -32,10 +36,14 @@ void readSensors(){//read all sensors
   _lazer->read();  
 }
 void readTile(){//read Tile data and send to PI
-  
+  int laserDistances[6];
+  for(int i = 0; i < 6; i++){
+    laserDistances[i] = _lazer->getDist(i);
+  }
 }
+
 void getPath(){//get BFS path from PI
-  
+  path = comm.readIn();
 }
 bool followPath(){//TODO: Add state machine for following
   return false;
