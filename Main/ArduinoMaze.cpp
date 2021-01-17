@@ -40,6 +40,14 @@ void readTile(){//read Tile data and send to PI
   for(int i = 0; i < 6; i++){
     laserDistances[i] = _lazer->getDist(i);
   }
+  String walls = 'FFFF'; //Front, Right, Back, Left (Clockwise)
+  if(laserDistances[0] < 300 && laserDistances[1] < 300)
+    walls[0] = 'T';
+  if(laserDistances[2] < 300 && laserDistances[3] < 300)
+    walls[1] = 'T';
+  if(laserDistances[4] < 300 && laserDistances[5] < 300)
+    walls[3] = 'T';
+  comm.writeOut(walls);
 }
 
 void getPath(){//get BFS path from PI
