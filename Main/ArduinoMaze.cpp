@@ -1,12 +1,14 @@
 #include "ArduinoMaze.h"
-#include "A"
 
-Chassis * _chassis;
-LazerSystem * _lazer;
-SA comm;
+FSTATE fstate;
+DIRECTION currDir;
+
+Chassis *_chassis;
+LazerSystem *_lazer;
+SA *_comm;
 
 String path;
-
+int step;
 void lMotorEncInterrupt()
 {
   (digitalRead(_chassis->getLeftMotor().getNEPin())) ? (_chassis->getLeftMotor().count -= _chassis->getLeftMotor().multi) : (_chassis->getLeftMotor().count += _chassis->getLeftMotor().multi);
@@ -15,10 +17,22 @@ void rMotorEncInterrupt()
 {
   (digitalRead(_chassis->getRightMotor().getNEPin())) ? (_chassis->getRightMotor().count -= _chassis->getRightMotor().multi) : (_chassis->getRightMotor().count += _chassis->getRightMotor().multi);
 }
-
+DIRECTION getDir(char c){
+  switch(c){
+    case 'U':
+      return UP;
+    case 'R':
+      return RIGHT;
+    case 'D':
+      return DOWN;
+    case 'L':
+      return LEFT;
+  }
+}
 void begin(){
   _chassis = new Chassis();
   _lazer = new LazerSystem();
+  _comm = new SA();
   Serial.begin(115200);
   Serial2.begin(9600);
   while (!Serial)
@@ -36,23 +50,38 @@ void readSensors(){//read all sensors
   _lazer->read();  
 }
 void readTile(){//read Tile data and send to PI
-  int laserDistances[6];
-  for(int i = 0; i < 6; i++){
-    laserDistances[i] = _lazer->getDist(i);
+  String walls = "FFFF"; //Front, Right, Back, Left (Clockwise)
+  for(int i = 0; i < 4; i++){
+    if(_lazer->getDist(i) < 300 && _lazer->getDist(i*2) < 300){
+      i+=(i == 2);
+      walls[i] = 'T';
+    }
   }
-  String walls = 'FFFF'; //Front, Right, Back, Left (Clockwise)
-  if(laserDistances[0] < 300 && laserDistances[1] < 300)
-    walls[0] = 'T';
-  if(laserDistances[2] < 300 && laserDistances[3] < 300)
-    walls[1] = 'T';
-  if(laserDistances[4] < 300 && laserDistances[5] < 300)
-    walls[3] = 'T';
-  comm.writeOut(walls);
+  _comm->writeOut(walls);
 }
 
 void getPath(){//get BFS path from PI
-  path = comm.readIn();
+  String path = _comm->readIn();
+  step = 0;
 }
 bool followPath(){//TODO: Add state machine for following
+  switch(fstate){
+    case FSTATE::TURNING:{
+      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
+        currDir = (currDir + getDir(path[step]))%4;
+        fstate  = FORWARD;
+      }
+      break;
+    }
+    case FSTATE::FORWARD:{
+      if(_chassis->goCm(30)){
+        step++;
+        fstate = TURNING;
+        if(step == path.length())
+          return true;
+      }
+      break;
+    }
+  }
   return false;
 }

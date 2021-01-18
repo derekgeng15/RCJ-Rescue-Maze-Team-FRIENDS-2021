@@ -13,16 +13,17 @@ enum Direction
 };
 
 class SA{
-  public:
-    //SA();
-    String readIn();
-    void writeOut(String x);
+
 
   private:  
     String buff;
     String readSerial();
-    Direction getDir();
+    //Direction getDir();
     void writeConfirm();
     void writeSerial(String x);
     void readConfirm();
+  public:
+    //SA();
+    String readIn();
+    void writeOut(String x);
 };
