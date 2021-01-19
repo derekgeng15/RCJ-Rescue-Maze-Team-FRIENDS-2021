@@ -1,9 +1,10 @@
+#pragma once
+
 #include <Wire.h>
 #include <Arduino.h>
 
 #include "Chassis.h"
-#include "LazerSystem.h"
-#include "IMU.h"
+#include "LaserSystem.h"
 
 #include "SerialArduino.h"
 
@@ -22,7 +23,7 @@ enum DIRECTION{
 const double ang[] = {0, PI/2, PI, 3 * PI/2};
 
 extern Chassis *_chassis;
-extern LazerSystem *_lazer;
+extern LaserSystem *_laser;
 extern SA *_comm;
 
 extern String path;
@@ -35,6 +36,7 @@ DIRECTION getDir(char c);
 
 void begin();
 void readSensors();
+void print();
 void readTile();
 void getPath();
 bool followPath();

@@ -1,3 +1,4 @@
+#pragma once
   //#ifndef SerialArduino_h
 //#define SerialArduino_h
 #include <Arduino.h>

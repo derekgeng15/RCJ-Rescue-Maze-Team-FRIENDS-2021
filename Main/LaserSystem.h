@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Wire.h>
 #include <Adafruit_VL53L0X.h>
 //address we will assign if dual sensor is present
@@ -16,18 +18,19 @@
 #define LEFTBACK 39
 #define LEFTMID 28
 
-#define NUM_OF_SENSORS 6
+#define NUM_OF_SENSORS 4
 
-class LazerSystem{
+class LaserSystem{
   private:
     //objects for the vl53l0x
-    Adafruit_VL53L0X lazer[NUM_OF_SENSORS];
+    Adafruit_VL53L0X laser[NUM_OF_SENSORS];
     VL53L0X_RangingMeasurementData_t measure[NUM_OF_SENSORS];
-    const int ID[NUM_OF_SENSORS] = {0x41, 0x40, 0x43, 0x45, 0x44, 0x42};
-    const int shut[NUM_OF_SENSORS] = {30, 39, 29, 27, 39, 28};
+    const int ID[NUM_OF_SENSORS] = {0x41, 0x40, 0x43, 0x45};//, 0x44, 0x42};
+    const int shut[NUM_OF_SENSORS] = {30, 39, 29, 27};//, 39, 28};
     double dist[NUM_OF_SENSORS];
   public:
     void init();
     void read();
+    void print();
     double getDist(int ID);
 };

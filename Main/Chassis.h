@@ -1,3 +1,5 @@
+#pragma once
+
 #include "MotorController.h"
 #include <Wire.h>
 #include <Arduino.h>
@@ -21,8 +23,9 @@ class Chassis{
     int getlEncCt();
     int getrEncCt();
     bool turnTo(double deg);
-    bool goCm(double cm);
-    void resetEncoderCt();
+    bool goMm(double mm);
+    void reset();
     void read();
+    void print();
   
 };

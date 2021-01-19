@@ -1,8 +1,8 @@
 #pragma once
 #include <MeMegaPi.h>
-#define WHEEL_DIAMETER 6.5
+#define WHEEL_DIAMETER 65
 #define tickPerRev 368.0
-#define encPerCm tickPerRev/(PI * WHEEL_DIAMETER)
+#define encPerMm tickPerRev/(PI * WHEEL_DIAMETER)
 class MotorController: public MeMegaPiDCMotor {
   private:
     volatile uint8_t port;

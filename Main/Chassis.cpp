@@ -48,12 +48,12 @@ bool Chassis::turnTo(double deg){
     return true;
   }
 }
-bool Chassis::goCm(double cm){
+bool Chassis::goMm(double mm){
   static double kP = 0.2;
   static double kD = 0;
-  if(lEncCt <= encPerCm * cm){
-    _lMotor.run((cm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
-    _rMotor.run((cm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
+  if(lEncCt <= encPerMm * mm){
+    _lMotor.run((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
+    _rMotor.run((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
     return false;
   }
   else{
@@ -62,7 +62,7 @@ bool Chassis::goCm(double cm){
     return true;
   }
 }
-void Chassis::resetEncoderCt(){
+void Chassis::reset(){
   _lMotor.count = 0;
   _rMotor.count = 0;
   lEncCt = 0;
@@ -76,4 +76,12 @@ void Chassis::read(){
   sensors_event_t imuData;
   _imu.getEvent(&imuData, Adafruit_BNO055::VECTOR_EULER);
   yaw =  imuData.orientation.x * PI / 180;
+}
+void Chassis::print(){
+  Serial.print("lmm:");
+  Serial.print(lEncCt * encPerMm);
+  Serial.print(" rmm:");
+  Serial.println(rEncCt * encPerMm);
+  Serial.print("Yaw:");
+  Serial.println(yaw * 180 / PI);
 }

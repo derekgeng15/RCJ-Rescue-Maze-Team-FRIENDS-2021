@@ -1,18 +1,10 @@
 #include "ArduinoMaze.h"
 
-
 enum STATE{
   READING, FOLLOWING
 }state;
 
-void setup()
-{
- begin();
-}
-
-void loop()
-{
-  readSensors();
+void stepState(){
   switch(state){
     case STATE::READING:{
       readTile();
@@ -26,4 +18,22 @@ void loop()
       break;
     }
   }
+}
+void test(String p){
+  path = p;
+  if(followPath()){
+      Serial.print("DONE");
+      while(1);
+  }
+}
+void setup()
+{
+ begin();
+}
+
+void loop()
+{
+  readSensors();
+  print();
+  test("RUULU");
 }

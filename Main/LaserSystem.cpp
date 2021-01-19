@@ -1,5 +1,5 @@
-#include "LazerSystem.h"
-void LazerSystem::init(){
+#include "LaserSystem.h"
+void LaserSystem::init(){
   for(int i = 0; i < NUM_OF_SENSORS; i++)
     pinMode(shut[i], OUTPUT);
   Serial.println("Shutdown pins inited...");
@@ -15,7 +15,7 @@ void LazerSystem::init(){
     digitalWrite(shut[i], LOW);
   for(int i = 0; i < NUM_OF_SENSORS; i++){
     digitalWrite(shut[i], HIGH);
-    if(!lazer[i].begin(ID[i])){
+    if(!laser[i].begin(ID[i])){
       Serial.print("Failed to Boot ");
       Serial.println(i);
       while(1)
@@ -25,14 +25,24 @@ void LazerSystem::init(){
   }
   Serial.println("IDs set");
 }
-double LazerSystem::getDist(int ID){
+double LaserSystem::getDist(int ID){
   return dist[ID];
 }
 
-void LazerSystem::read(){
+void LaserSystem::read(){
     for(int i = 0; i < NUM_OF_SENSORS; i++){
-      lazer[i].rangingTest(&measure[i], false);
+      laser[i].rangingTest(&measure[i], false);
       dist[i] = -1;
       dist[i] = measure[i].RangeMilliMeter;
     }
+}
+void LaserSystem::print(){
+  for(int i = 0; i < NUM_OF_SENSORS; i++){
+    Serial.print("l");
+    Serial.print(i);
+    Serial.print(":");
+    Serial.print(dist[i]);
+    Serial.print("  ");
+  }
+  Serial.println();
 }

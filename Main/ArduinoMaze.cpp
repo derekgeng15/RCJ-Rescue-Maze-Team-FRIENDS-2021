@@ -4,7 +4,7 @@ FSTATE fstate;
 DIRECTION currDir;
 
 Chassis *_chassis;
-LazerSystem *_lazer;
+LaserSystem *_laser;
 SA *_comm;
 
 String path;
@@ -31,7 +31,7 @@ DIRECTION getDir(char c){
 }
 void begin(){
   _chassis = new Chassis();
-  _lazer = new LazerSystem();
+  _laser = new LaserSystem();
   _comm = new SA();
   Serial.begin(115200);
   Serial2.begin(9600);
@@ -40,23 +40,29 @@ void begin(){
   Serial.println("Begin!");
   Wire.begin();
   _chassis->init();
-  _lazer->init();
+  _laser->init();
   attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor().getIntPin()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor().getIntPin()), rMotorEncInterrupt, RISING);
   delay(2000);
 }
 void readSensors(){//read all sensors
   _chassis->read();
-  _lazer->read();  
+  _laser->read();  
+}
+void print(){
+  Serial.println("--------------------");
+  _chassis->print();
+  _laser->print();
+  Serial.println("--------------------");
 }
 void readTile(){//read Tile data and send to PI
   String walls = "FFFF"; //Front, Right, Back, Left (Clockwise)
-  for(int i = 0; i < 4; i++){
-    if(_lazer->getDist(i) < 300 && _lazer->getDist(i*2) < 300){
-      i+=(i == 2);
-      walls[i] = 'T';
-    }
-  }
+  if(_laser->getDist(0) < 300 && _laser->getDist(1) < 300)
+    walls[0] = 'T';
+  if(_laser->getDist(2) < 300);
+    walls[1] = 'T';
+  if(_laser->getDist(3) < 300);
+    walls[3] = 'T';
   _comm->writeOut(walls);
 }
 
@@ -70,11 +76,12 @@ bool followPath(){//TODO: Add state machine for following
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
         currDir = (currDir + getDir(path[step]))%4;
         fstate  = FORWARD;
+        _chassis->reset();
       }
       break;
     }
     case FSTATE::FORWARD:{
-      if(_chassis->goCm(30)){
+      if(_chassis->goMm(300)){
         step++;
         fstate = TURNING;
         if(step == path.length())
