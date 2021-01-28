@@ -4,21 +4,6 @@ enum STATE{
   READING, FOLLOWING
 }state;
 
-void stepState(){
-  switch(state){
-    case STATE::READING:{
-      readTile();
-      getPath();
-      state = STATE::FOLLOWING;
-      break;
-    }
-    case STATE::FOLLOWING:{
-      if(followPath())
-        state = STATE::READING;
-      break;
-    }
-  }
-}
 void test(String p){
   path = p;
   if(followPath()){
@@ -35,5 +20,19 @@ void loop()
 {
   readSensors();
   print();
-  test("RUULU");
+  _chassis->getLeftMotor()->run(100);
+  _chassis->getRightMotor()->run(100);
+//  switch(state){
+//    case STATE::READING:{
+//      readTile();
+//      getPath();
+//      state = STATE::FOLLOWING;
+//      break;
+//    }
+//    case STATE::FOLLOWING:{
+//      if(followPath())
+//        state = STATE::READING;
+//      break;
+//    }
+//  }
 }

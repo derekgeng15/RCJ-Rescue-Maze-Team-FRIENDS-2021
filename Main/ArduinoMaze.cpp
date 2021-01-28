@@ -11,11 +11,11 @@ String path;
 int step;
 void lMotorEncInterrupt()
 {
-  (digitalRead(_chassis->getLeftMotor().getNEPin())) ? (_chassis->getLeftMotor().count -= _chassis->getLeftMotor().multi) : (_chassis->getLeftMotor().count += _chassis->getLeftMotor().multi);
+  (digitalRead(_chassis->getLeftMotor()->getNEPin())) ? (_chassis->getLeftMotor()->count -= _chassis->getLeftMotor()->multi) : (_chassis->getLeftMotor()->count += _chassis->getLeftMotor()->multi);
 }
 void rMotorEncInterrupt()
 {
-  (digitalRead(_chassis->getRightMotor().getNEPin())) ? (_chassis->getRightMotor().count -= _chassis->getRightMotor().multi) : (_chassis->getRightMotor().count += _chassis->getRightMotor().multi);
+  (digitalRead(_chassis->getRightMotor()->getNEPin())) ? (_chassis->getRightMotor()->count -= _chassis->getRightMotor()->multi) : (_chassis->getRightMotor()->count += _chassis->getRightMotor()->multi);
 }
 DIRECTION getDir(char c){
   switch(c){
@@ -31,8 +31,8 @@ DIRECTION getDir(char c){
 }
 void begin(){
   _chassis = new Chassis();
-  _laser = new LaserSystem();
-  _comm = new SA();
+  //_laser = new LaserSystem();
+  //_comm = new SA();
   Serial.begin(115200);
   Serial2.begin(9600);
   while (!Serial)
@@ -40,19 +40,19 @@ void begin(){
   Serial.println("Begin!");
   Wire.begin();
   _chassis->init();
-  _laser->init();
-  attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor().getIntPin()), lMotorEncInterrupt, RISING);
-  attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor().getIntPin()), rMotorEncInterrupt, RISING);
+  //_laser->init();
+  attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor()->getIntPin()), lMotorEncInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor()->getIntPin()), rMotorEncInterrupt, RISING);
   delay(2000);
 }
 void readSensors(){//read all sensors
   _chassis->read();
-  _laser->read();  
+  //_laser->read();  
 }
 void print(){
   Serial.println("--------------------");
   _chassis->print();
-  _laser->print();
+  //_laser->print();
   Serial.println("--------------------");
 }
 void readTile(){//read Tile data and send to PI
@@ -70,7 +70,12 @@ void getPath(){//get BFS path from PI
   String path = _comm->readIn();
   step = 0;
 }
+
 bool followPath(){//TODO: Add state machine for following
+  /*
+       * if see black, call ai blackout(rPI serial)
+       * 
+       */
   switch(fstate){
     case FSTATE::TURNING:{
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
@@ -81,6 +86,7 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::FORWARD:{
+      
       if(_chassis->goMm(300)){
         step++;
         fstate = TURNING;
@@ -89,6 +95,9 @@ bool followPath(){//TODO: Add state machine for following
       }
       break;
     }
+//    case FSTATE::BLACKTILE{
+//      chassis.goto(0);
+//    }
   }
   return false;
 }

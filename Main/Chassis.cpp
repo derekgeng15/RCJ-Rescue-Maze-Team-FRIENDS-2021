@@ -1,5 +1,7 @@
 #include "Chassis.h"
-Chassis::Chassis(): _imu(55, 0x28),_rMotor(PORT1B, 18, 31, 1),_lMotor(PORT2B, 19, 38, 0){
+Chassis::Chassis(): _imu(55, 0x28){
+  _rMotor = new MotorController(PORT1B, 18, 31, 1);
+  _lMotor = new MotorController(PORT2B, 19, 38, 0);
 }
 
 void Chassis::init(){
@@ -11,10 +13,10 @@ void Chassis::init(){
 
   Serial.println("Motors set");
 }
-MotorController Chassis::getLeftMotor(){
+MotorController *Chassis::getLeftMotor(){
   return _lMotor;
 }
-MotorController Chassis::getRightMotor(){
+MotorController *Chassis::getRightMotor(){
   return _rMotor;
 }
     
@@ -38,13 +40,13 @@ bool Chassis::turnTo(double deg){
   else if(error < -PI)
     error += 2 * PI;
   if(error > 1){
-    _rMotor.run(-error * kP);
-    _lMotor.run(error * kP);
+    _rMotor->run(-error * kP);
+    _lMotor->run(error * kP);
     return false;
   }
   else{
-    _rMotor.run(0);
-    _lMotor.run(0);
+    _rMotor->run(0);
+    _lMotor->run(0);
     return true;
   }
 }
@@ -52,27 +54,27 @@ bool Chassis::goMm(double mm){
   static double kP = 0.2;
   static double kD = 0;
   if(lEncCt <= encPerMm * mm){
-    _lMotor.run((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
-    _rMotor.run((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
+    _lMotor->run((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
+    _rMotor->run((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
     return false;
   }
   else{
-    _lMotor.run(0);
-    _rMotor.run(0);
+    _lMotor->run(0);
+    _rMotor->run(0);
     return true;
   }
 }
 void Chassis::reset(){
-  _lMotor.count = 0;
-  _rMotor.count = 0;
+  _lMotor->count = 0;
+  _rMotor->count = 0;
   lEncCt = 0;
   rEncCt = 0;
 }
 void Chassis::read(){
   plEncCt = lEncCt;
   prEncCt = rEncCt;
-  lEncCt = _lMotor.count;
-  rEncCt = _rMotor.count;
+  lEncCt = _lMotor->count;
+  rEncCt = _rMotor->count;
   sensors_event_t imuData;
   _imu.getEvent(&imuData, Adafruit_BNO055::VECTOR_EULER);
   yaw =  imuData.orientation.x * PI / 180;
