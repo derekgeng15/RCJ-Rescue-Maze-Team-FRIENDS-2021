@@ -59,6 +59,7 @@ bool Chassis::goMm(double mm){
   else{
     _lMotor.run(0);
     _rMotor.run(0);
+    Serial.println("DONE");
     return true;
   }
 }

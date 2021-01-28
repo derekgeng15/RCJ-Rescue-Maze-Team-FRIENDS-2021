@@ -41,8 +41,10 @@ void begin(){
   Wire.begin();
   _chassis->init();
   _laser->init();
+  _chassis->reset();
   attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor().getIntPin()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor().getIntPin()), rMotorEncInterrupt, RISING);
+  Serial.println(_chassis->getLeftMotor().getIntPin());
   delay(2000);
 }
 void readSensors(){//read all sensors

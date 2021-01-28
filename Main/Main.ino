@@ -34,6 +34,7 @@ void setup()
 void loop()
 {
   readSensors();
-  print();
-  test("RUULU");
+  //print();
+  _chassis->print();
+  _chassis->goMm(300);
 }
