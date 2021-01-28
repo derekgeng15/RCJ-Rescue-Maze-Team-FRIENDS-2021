@@ -19,9 +19,6 @@ void setup()
 void loop()
 {
   readSensors();
-  print();
-  _chassis->getLeftMotor()->run(100);
-  _chassis->getRightMotor()->run(100);
 //  switch(state){
 //    case STATE::READING:{
 //      readTile();
@@ -35,4 +32,7 @@ void loop()
 //      break;
 //    }
 //  }
+  //print();
+  _chassis->print();
+  _chassis->goMm(300);
 }
