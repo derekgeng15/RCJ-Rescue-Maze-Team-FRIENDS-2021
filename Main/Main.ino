@@ -1,4 +1,6 @@
 #include "ArduinoMaze.h"
+#include <MeMegaPi.h>
+
 
 enum STATE{
   READING, FOLLOWING
@@ -11,10 +13,17 @@ void test(String p){
       while(1);
   }
 }
+
+//MeMegaPiDCMotor left = MeMegaPiDCMotor(PORT1B);
+//MeMegaPiDCMotor right = MeMegaPiDCMotor(PORT2B);
 void setup()
 {
+  
  begin();
+ //left.run(100);
+ //right.run(-100);
 }
+
 
 void loop()
 {
@@ -34,5 +43,8 @@ void loop()
 //  }
   //print();
   _chassis->print();
-  _chassis->goMm(300);
+  
+  //_chassis->getLeftMotor()->run(100);
+  //_chassis->getRightMotor()->run(100);
+  //_chassis->goMm(300);
 }

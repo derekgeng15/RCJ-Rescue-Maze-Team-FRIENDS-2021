@@ -14,7 +14,7 @@ class MotorController: public MeMegaPiDCMotor {
     volatile int16_t count;
     MotorController(uint8_t p, uint8_t i, uint8_t n, int reversed);   // constructor
     void init();
-    void run(int16_t s);
+    //void run(int16_t s);
     void resetcount();
     uint8_t getIntPin();
     uint8_t getNEPin();

@@ -11,11 +11,11 @@ String path;
 int step;
 void lMotorEncInterrupt()
 {
-  (digitalRead(_chassis->getLeftMotor()->getNEPin())) ? (_chassis->getLeftMotor()->count -= _chassis->getLeftMotor()->multi) : (_chassis->getLeftMotor()->count += _chassis->getLeftMotor()->multi);
+//  (digitalRead(_chassis->getLeftMotor()->getNEPin())) ? (_chassis->getLeftMotor()->count -= _chassis->getLeftMotor()->multi) : (_chassis->getLeftMotor()->count += _chassis->getLeftMotor()->multi);
 }
 void rMotorEncInterrupt()
 {
-  (digitalRead(_chassis->getRightMotor()->getNEPin())) ? (_chassis->getRightMotor()->count -= _chassis->getRightMotor()->multi) : (_chassis->getRightMotor()->count += _chassis->getRightMotor()->multi);
+//  (digitalRead(_chassis->getRightMotor()->getNEPin())) ? (_chassis->getRightMotor()->count -= _chassis->getRightMotor()->multi) : (_chassis->getRightMotor()->count += _chassis->getRightMotor()->multi);
 }
 DIRECTION getDir(char c){
   switch(c){
@@ -40,9 +40,10 @@ void begin(){
   Serial.println("Begin!");
   Wire.begin();
   _chassis->init();
+  _chassis->reset();
   //_laser->init();
-  attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor()->getIntPin()), lMotorEncInterrupt, RISING);
-  attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor()->getIntPin()), rMotorEncInterrupt, RISING);
+  //attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor()->getIntPin()), lMotorEncInterrupt, RISING);
+  //attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor()->getIntPin()), rMotorEncInterrupt, RISING);
   delay(2000);
 }
 void readSensors(){//read all sensors
