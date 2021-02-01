@@ -14,14 +14,10 @@ void test(String p){
   }
 }
 
-//MeMegaPiDCMotor left = MeMegaPiDCMotor(PORT1B);
-//MeMegaPiDCMotor right = MeMegaPiDCMotor(PORT2B);
 void setup()
 {
   
  begin();
- //left.run(100);
- //right.run(-100);
 }
 
 
