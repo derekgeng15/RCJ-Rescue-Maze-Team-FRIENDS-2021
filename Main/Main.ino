@@ -23,7 +23,11 @@ void setup()
 
 void loop()
 {
+   Serial.print("A");
   readSensors();
+    Serial.println("B");
+  delay(1);
+
 //  switch(state){
 //    case STATE::READING:{
 //      readTile();
@@ -42,5 +46,6 @@ void loop()
   
   //_chassis->getLeftMotor()->run(100);
   //_chassis->getRightMotor()->run(100);
-  //_chassis->goMm(300);
+  _chassis->goMm(300);
+
 }

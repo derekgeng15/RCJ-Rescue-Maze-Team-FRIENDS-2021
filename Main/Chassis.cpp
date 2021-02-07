@@ -1,12 +1,12 @@
 #include "Chassis.h"
 
-Chassis::Chassis():_imu(55, 0x28),_lEnc(18, 31, 1), _rEnc(19, 38, 0)//take out this mf if it doesn't work
+Chassis::Chassis():_imu(55, 0x28), _lEnc(18, 31, 1), _rEnc(19, 38, 0)
 {
   //_imu = Adafruit_BNO055(55, 0x28);
   _lMotor = MeMegaPiDCMotor(PORT1B);
   _rMotor = MeMegaPiDCMotor(PORT2B);
-//  _lEnc = Encoder(18, 31, 1);
-//  _rEnc = Encoder(19, 38, 0);
+  _lEnc = Encoder(18, 31, 0);
+  _rEnc = Encoder(19, 38, 1);
 }
 
 void Chassis::init(){
@@ -35,10 +35,10 @@ uint8_t Chassis::getREncInt(){
   return _rEnc.getIntPin();
 }
 void Chassis::updLEnc(){
-  _rEnc.read();
+  _lEnc.read();
 }
 void Chassis::updREnc(){
-  _lEnc.read();
+  _rEnc.read();
 }
 bool Chassis::turnTo(double deg){
   static double kP = 3.2;
@@ -61,22 +61,22 @@ bool Chassis::turnTo(double deg){
   }
 }
 bool Chassis::goMm(double mm){
-  static double kP = 0.5;
+  static double kP = 0.8;
   static double kD = 0;
   if(lEncCt <= encPerMm * mm){
 //    Serial.print(" lmotor power: ");
 //    Serial.println((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
 //    Serial.print(" rmotor power: ");
 //    Serial.println((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
-    _lMotor.run((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
-    _rMotor.run((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
+    _lMotor.run(((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD));
+    _rMotor.run(-1*(encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
 //    Serial.println("RUNNING");
     return false;
   }
   else{
     _lMotor.run(0);
     _rMotor.run(0);
-//    Serial.println("DONE");
+    Serial.println("DONE");
     delay(2000);
     return true;
   }
@@ -98,9 +98,9 @@ void Chassis::read(){
 }
 void Chassis::print(){
   Serial.print("lmm: ");
-  Serial.print(lEncCt / encPerMm);
+  Serial.print(lEncCt );
   Serial.print(" rmm: ");
-  Serial.print(rEncCt / encPerMm);
+  Serial.print(rEncCt );
   Serial.print(" Yaw: ");
   Serial.println(yaw * 180 / PI);
 }
