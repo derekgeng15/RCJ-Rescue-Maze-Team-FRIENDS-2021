@@ -11,22 +11,22 @@
 #define MIDDLE_LEFT_ADD 0x42
 
 //set the pins to shutdown
-#define FRONTLEFT 30
-#define FRONTRIGHT 39
-#define RIGHTMID 29
+#define FRONTLEFT 28
+#define FRONTRIGHT 29
+#define RIGHTMID 27
 #define RIGHTBACK 27
 #define LEFTBACK 39
-#define LEFTMID 28
+#define LEFTMID 26
 
-#define NUM_OF_SENSORS 2
+#define NUM_OF_SENSORS 4
 
 class LaserSystem{
   private:
     //objects for the vl53l0x
     Adafruit_VL53L0X laser[NUM_OF_SENSORS];
     VL53L0X_RangingMeasurementData_t measure[NUM_OF_SENSORS];
-    const int ID[NUM_OF_SENSORS] = {0x40, 0x43};//, 0x44, 0x42};
-    const int shut[NUM_OF_SENSORS] = {39, 29};//, 39, 28};
+    const int ID[NUM_OF_SENSORS] = {0x40, 0x43, 0x44, 0x42};
+    const int shut[NUM_OF_SENSORS] = {28, 29, 26, 27};//, 39, 28};
     double dist[NUM_OF_SENSORS];
   public:
     void init();

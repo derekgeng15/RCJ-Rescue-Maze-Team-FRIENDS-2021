@@ -1,6 +1,6 @@
 #include "ArduinoMaze.h"
 
-FSTATE fstate;
+FSTATE fstate = TURNING;
 DIRECTION currDir;
 
 Chassis *_chassis;
@@ -31,8 +31,8 @@ DIRECTION getDir(char c){
 }
 void begin(){
   _chassis = new Chassis();
-  //_laser = new LaserSystem();
-  //_comm = new SA();
+  _laser = new LaserSystem();
+  _comm = new SA();
   Serial.begin(115200);
   Serial2.begin(9600);
   while (!Serial)
@@ -41,19 +41,19 @@ void begin(){
   Wire.begin();
   _chassis->init();
   _chassis->reset();
-  //_laser->init();
+  _laser->init();
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   delay(2000);
 }
 void readSensors(){//read all sensors
   _chassis->read();
-  //_laser->read();  
+  _laser->read();  
 }
 void print(){
   Serial.println("--------------------");
   _chassis->print();
-  //_laser->print();
+  _laser->print();
   Serial.println("--------------------");
 }
 void readTile(){//read Tile data and send to PI

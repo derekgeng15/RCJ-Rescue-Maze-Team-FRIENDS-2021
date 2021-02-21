@@ -5,8 +5,8 @@ Chassis::Chassis():_imu(55, 0x28), _lEnc(18, 31, 1), _rEnc(19, 38, 0)
   //_imu = Adafruit_BNO055(55, 0x28);
   _lMotor = MeMegaPiDCMotor(PORT1B);
   _rMotor = MeMegaPiDCMotor(PORT2B);
-  _lEnc = Encoder(18, 31, 0);
-  _rEnc = Encoder(19, 38, 1);
+  _lEnc = Encoder(18, 31, 1);
+  _rEnc = Encoder(19, 38, 0);
 }
 
 void Chassis::init(){
@@ -40,36 +40,48 @@ void Chassis::updLEnc(){
 void Chassis::updREnc(){
   _rEnc.read();
 }
+double totalErr = 0;
 bool Chassis::turnTo(double deg){
   static double kP = 3.2;
-//  double kI = 0.003;
+  double kI = 0.02;
 //  double totalError = 0;
-  double error = deg - yaw;
-  if(error > PI)
-    error = 2 * PI - error;
-  else if(error < -PI)
-    error += 2 * PI;
-  if(error > 1){
-    _rMotor.run(-error * kP);
-    _lMotor.run(error * kP);
+  double error = deg - (yaw * 180 / PI);
+  if(error > 180)
+    error = 360 - error;
+  else if(error < -180)
+    error += 360;
+  totalErr+=error;
+  Serial.print("ERROR: ");
+  Serial.println(error);
+  if(abs(error) > 1){
+    Serial.println("Moving");
+    _rMotor.run(error * kP + (totalErr*kI));
+    _lMotor.run(error * kP + (totalErr*kI));
     return false;
   }
   else{
+    Serial.println("Done Turning");
     _rMotor.run(0);
     _lMotor.run(0);
+    totalErr = 0;
     return true;
   }
 }
+double lTotalErr = 0;
+double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 0.8;
+  static double kP = 1.2;
   static double kD = 0;
+  double kI = 0.001;
+  lTotalErr+=(encPerMm * mm - lEncCt);
+  rTotalErr+=(encPerMm * mm - rEncCt);
   if(lEncCt <= encPerMm * mm){
 //    Serial.print(" lmotor power: ");
 //    Serial.println((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
 //    Serial.print(" rmotor power: ");
 //    Serial.println((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
-    _lMotor.run(((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD));
-    _rMotor.run(-1*(encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
+    _lMotor.run(-1*(((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)));
+    _rMotor.run((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD + (rTotalErr*kI));
 //    Serial.println("RUNNING");
     return false;
   }
@@ -77,7 +89,8 @@ bool Chassis::goMm(double mm){
     _lMotor.run(0);
     _rMotor.run(0);
     Serial.println("DONE");
-    delay(2000);
+    lTotalErr = 0;
+    rTotalErr = 0;
     return true;
   }
 }
