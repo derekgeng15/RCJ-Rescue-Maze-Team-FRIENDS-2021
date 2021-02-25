@@ -20,7 +20,7 @@ enum DIRECTION{
   UP, RIGHT, DOWN, LEFT
 }extern currDir;
 
-const double ang[] = {0, PI/2, PI, 3 * PI/2};
+const double ang[] = {0, 90, 180, 270};
 
 extern Chassis *_chassis;
 extern LaserSystem *_laser;

@@ -1,6 +1,6 @@
 #include "ArduinoMaze.h"
 
-FSTATE fstate;
+FSTATE fstate = TURNING;
 DIRECTION currDir;
 
 Chassis *_chassis;
@@ -11,11 +11,11 @@ String path;
 int step;
 void lMotorEncInterrupt()
 {
-  (digitalRead(_chassis->getLeftMotor().getNEPin())) ? (_chassis->getLeftMotor().count -= _chassis->getLeftMotor().multi) : (_chassis->getLeftMotor().count += _chassis->getLeftMotor().multi);
+  _chassis->updLEnc();
 }
 void rMotorEncInterrupt()
 {
-  (digitalRead(_chassis->getRightMotor().getNEPin())) ? (_chassis->getRightMotor().count -= _chassis->getRightMotor().multi) : (_chassis->getRightMotor().count += _chassis->getRightMotor().multi);
+  _chassis->updREnc();
 }
 DIRECTION getDir(char c){
   switch(c){
@@ -40,9 +40,10 @@ void begin(){
   Serial.println("Begin!");
   Wire.begin();
   _chassis->init();
+  _chassis->reset();
   _laser->init();
-  attachInterrupt(digitalPinToInterrupt(_chassis->getLeftMotor().getIntPin()), lMotorEncInterrupt, RISING);
-  attachInterrupt(digitalPinToInterrupt(_chassis->getRightMotor().getIntPin()), rMotorEncInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   delay(2000);
 }
 void readSensors(){//read all sensors
@@ -70,7 +71,12 @@ void getPath(){//get BFS path from PI
   String path = _comm->readIn();
   step = 0;
 }
+
 bool followPath(){//TODO: Add state machine for following
+  /*
+       * if see black, call ai blackout(rPI serial)
+       * 
+       */
   switch(fstate){
     case FSTATE::TURNING:{
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
@@ -81,6 +87,7 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::FORWARD:{
+      
       if(_chassis->goMm(300)){
         step++;
         fstate = TURNING;
@@ -89,6 +96,9 @@ bool followPath(){//TODO: Add state machine for following
       }
       break;
     }
+//    case FSTATE::BLACKTILE{
+//      chassis.goto(0);
+//    }
   }
   return false;
 }
