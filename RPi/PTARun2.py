@@ -17,34 +17,29 @@ ser = serial.Serial(
     timeout=1
 )
 
+counter = 0
+
 while True:
     #ser.write(int_encode)
+    msg = "Hey Buddy!" + "\n"
+    ser.write((msg).encode())
+    print("Printed: " + msg)
     done = False
-    print("Waiting...")
     while not done:
         #print("Bytes in buff: " + str(ser.in_waiting))
         try:
-            while(ser.in_waiting == 0): #if there's something in the buffer
+            while(ser.in_waiting > 0): #if there's something in the buffer
                 pass
             #    print("Reading:")
-            print("Size: " + str( ser.in_waiting))
+            print("Got confirm message:")
             x = ser.read_until("\n")
-            for i in x.decode("ascii"):
-                print("Character:", i) #ord(i)
             print(x.decode("ascii"), end="\n")
-            if(x.decode("ascii")=="Maze"):
-                print("Said Maze!")
-            else:
-                print(":(")
             done = True
-         #   print("Bytes in buff: " + str(ser.in_waiting))
+            #   print("Bytes in buff: " + str(ser.in_waiting))
         except IOError as e:
             print ("Something Bad Happened!")
             print(e)
         time.sleep(0.25)
-    ser.flush()
-    ser.write("Confirm\n".encode())
-    print("Responded to Arduino Confirm!")
 '''while not (ser.in_waiting > 0):
     pass
 print(ser.in_waiting)
@@ -55,4 +50,3 @@ if(x=="Confirm\n"):
 else:
     print("NO!")
 time.sleep(1)'''
-
