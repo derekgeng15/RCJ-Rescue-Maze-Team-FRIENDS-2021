@@ -23,17 +23,17 @@ String SA::readSerial(){
   Serial.println("Waiting for message");
   while(!Serial2.available());
   buff = Serial2.readStringUntil('\n');
-  Serial.println("Recieved: " + buff);
+  //Serial.println("Recieved: " + buff);
   return buff;
 }
 
 void SA::writeConfirm(){
-  Serial2.print("Confirm");
+  Serial2.println("Confirm");
 }
 
 void SA::writeSerial(String x)
 {
-  Serial2.print(x);
+  Serial2.println(x);
   Serial.println(x);
 }
 

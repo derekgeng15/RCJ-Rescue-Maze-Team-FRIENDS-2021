@@ -1,5 +1,5 @@
-/*#include <Wire.h>
-#include "MotorController.h"
+#include <Wire.h>
+//#include "MotorController.h"
 #include "Adafruit_VL53L0X.h"
 #include "SerialArduino.h"
 #include <String.h>
@@ -21,10 +21,15 @@ void setup()
 void loop()
 {
   //getDir();
-  //confirm();
+  //ONLY UNCOMMENT THIS if you want to write stuff out
+  // comm.writeOut("5");
 
-  comm.writeOut("5");
-  int msg = (comm.readIn()).toInt();
-  Serial.println("Returned: " + String(msg));
+  //ONLY UNCOMMENT THIS if you want to read in stuff (reading in integers)
+  //int msg = (comm.readIn()).toInt();
+  //Serial.println("Returned: " + String(msg));
+  
+  //ONLY UNCOMMENT THIS if you want to read in stuff (reading in strings)
+  Serial.println("Returned: " + comm.readIn());
+  
   delay(500);
-}*/
+}
