@@ -1,4 +1,4 @@
-/*#include "ArduinoMaze.h"
+#include "ArduinoMaze.h"
 #include <MeMegaPi.h>
 
 
@@ -22,26 +22,20 @@ void setup()
 void loop()
 {
   readSensors();
-//  switch(state){
-//    case STATE::READING:{
-//      readTile();
-//      getPath();
-//      state = STATE::FOLLOWING;
-//      break;
-//    }
-//    case STATE::FOLLOWING:{
-//      if(followPath())
-//        state = STATE::READING;
-//      break;
-//    }
-//  }
-  //print();
-  //_chassis->print();
-  
-  //_chassis->getLeftMotor()->run(100);
-  //_chassis->getRightMotor()->run(100);
-  //_chassis->goMm(300);
+  switch(state){
+    case STATE::READING:{
+      readTile();
+      getPath();
+      state = STATE::FOLLOWING;
+      break;
+    }
+    case STATE::FOLLOWING:{
+      if(followPath())
+        state = STATE::READING;
+      break;
+    }
+  }
   print();
   //_chassis->turnTo(-90);
   //test("URL");
-}*/
+}

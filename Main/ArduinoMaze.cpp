@@ -57,18 +57,32 @@ void print(){
   Serial.println("--------------------");
 }
 void readTile(){//read Tile data and send to PI
-  String walls = "FFFF"; //Front, Right, Back, Left (Clockwise)
-  if(_laser->getDist(0) < 300 && _laser->getDist(1) < 300)
-    walls[0] = 'T';
-  if(_laser->getDist(2) < 300);
-    walls[1] = 'T';
-  if(_laser->getDist(3) < 300);
-    walls[3] = 'T';
+  String walls = ""; //Front, Right, Back, Left (Clockwise)
+  if(_laser->getDist(0) < 100) {
+    Serial.println(_laser->getDist(0));
+    walls+="1";
+    Serial.println("First Sensor Seen");
+  }
+  else
+    walls+="0";
+  if(_laser->getDist(3) < 100) {
+    Serial.println("Second Sensor Seen");
+    walls+="1";
+  }
+  else
+    walls+="0";
+  walls+="0";
+  if(_laser->getDist(2) < 100) {
+    Serial.println("Third Sensor Seen");
+    walls+="1";
+  }
+  else
+    walls+="0";
   _comm->writeOut(walls);
 }
 
 void getPath(){//get BFS path from PI
-  String path = _comm->readIn();
+  path = _comm->readIn();
   step = 0;
 }
 

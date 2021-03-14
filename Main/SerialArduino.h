@@ -5,13 +5,6 @@
 #include <Wire.h>
 
 
-enum Direction
-{
-  NORTH,
-  EAST,
-  SOUTH,
-  WEST
-};
 
 class SA{
 
