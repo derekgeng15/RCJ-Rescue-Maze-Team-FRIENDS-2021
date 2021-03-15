@@ -21,10 +21,12 @@ void setup()
 }
 void loop()
 {
+
   readSensors();
   switch(state){
     case STATE::READING:{
       readTile();
+      _comm->writeOut("Gib command");
       getPath();
       state = STATE::FOLLOWING;
       break;
@@ -35,7 +37,7 @@ void loop()
       break;
     }
   }
-  print();
+  //print();
   //_chassis->turnTo(-90);
   //test("URL");
 }

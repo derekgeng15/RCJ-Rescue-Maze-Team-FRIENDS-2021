@@ -7,6 +7,7 @@ Chassis *_chassis;
 LaserSystem *_laser;
 SA *_comm;
 
+double threshold = 200;
 String path;
 int step;
 void lMotorEncInterrupt()
@@ -58,21 +59,20 @@ void print(){
 }
 void readTile(){//read Tile data and send to PI
   String walls = ""; //Front, Right, Back, Left (Clockwise)
-  if(_laser->getDist(0) < 100) {
-    Serial.println(_laser->getDist(0));
+  if(_laser->getDist(0) < threshold) {
     walls+="1";
     Serial.println("First Sensor Seen");
   }
   else
     walls+="0";
-  if(_laser->getDist(3) < 100) {
+  if(_laser->getDist(3) < threshold) {
     Serial.println("Second Sensor Seen");
     walls+="1";
   }
   else
     walls+="0";
   walls+="0";
-  if(_laser->getDist(2) < 100) {
+  if(_laser->getDist(2) < threshold) {
     Serial.println("Third Sensor Seen");
     walls+="1";
   }
@@ -102,7 +102,7 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::FORWARD:{
       
-      if(_chassis->goMm(300)){
+      if(_chassis->goMm(280)){
         step++;
         fstate = TURNING;
         if(step == path.length())

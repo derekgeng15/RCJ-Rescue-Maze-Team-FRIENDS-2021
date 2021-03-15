@@ -1,5 +1,7 @@
 #include "Chassis.h"
 
+double counter = 0;
+
 Chassis::Chassis():_imu(55, 0x28), _lEnc(18, 31, 1), _rEnc(19, 38, 0)
 {
   //_imu = Adafruit_BNO055(55, 0x28);
@@ -42,21 +44,23 @@ void Chassis::updREnc(){
 }
 double totalErr = 0;
 bool Chassis::turnTo(double deg){
-  static double kP = 3.2;
-  double kI = 0.02;
-//  double totalError = 0;
+  static double kP = 2.7;
+  double kI = 0.06;
   double error = deg - (yaw * 180 / PI);
   if(error > 180)
     error = 360 - error;
   else if(error < -180)
     error += 360;
   totalErr+=error;
-  Serial.print("ERROR: ");
-  Serial.println(error);
-  if(abs(error) > 1){
+  Serial.print("TURN COUNT: ");
+  Serial.println(counter);
+  //Serial.print("ERROR: ");
+  //Serial.println(error);
+  if(abs(error) > 2.5){
     Serial.println("Moving");
     _rMotor.run(error * kP + (totalErr*kI));
     _lMotor.run(error * kP + (totalErr*kI));
+    counter++;
     return false;
   }
   else{
@@ -64,33 +68,47 @@ bool Chassis::turnTo(double deg){
     _rMotor.run(0);
     _lMotor.run(0);
     totalErr = 0;
+    counter=0;
     return true;
   }
 }
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 1.2;
+  static double kP = 0.6;
   static double kD = 0;
-  double kI = 0.001;
+  double kI = 0.01;
+  double speed;
   lTotalErr+=(encPerMm * mm - lEncCt);
   rTotalErr+=(encPerMm * mm - rEncCt);
-  if(lEncCt <= encPerMm * mm){
-//    Serial.print(" lmotor power: ");
-//    Serial.println((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
-//    Serial.print(" rmotor power: ");
-//    Serial.println((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
-    _lMotor.run(-1*(((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)));
-    _rMotor.run((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD + (rTotalErr*kI));
+  if(abs(lEncCt - (encPerMm * mm))>9){
+    //Serial.print("ERROR: ");
+    //Serial.println(lEncCt - (encPerMm * mm));
+    //Serial.print(" lmotor power: ");
+    //Serial.println((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
+    //Serial.print(" rmotor power: ");
+    //Serial.println((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
+    if((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI))<0) {
+      speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -35);
+    }
+    else {
+      speed = max((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), 35);
+    }
+    _lMotor.run(-1*speed);
+    _rMotor.run(speed);
 //    Serial.println("RUNNING");
+    counter++;
     return false;
   }
   else{
     _lMotor.run(0);
     _rMotor.run(0);
+    Serial.print("COUNT: ");
+    Serial.println(counter);
     Serial.println("DONE");
     lTotalErr = 0;
     rTotalErr = 0;
+    counter = 0;
     return true;
   }
 }
