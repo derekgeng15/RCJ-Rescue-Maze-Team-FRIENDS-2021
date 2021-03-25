@@ -1,6 +1,8 @@
 #include "Chassis.h"
 
 double counter = 0;
+double lSpeed = 0;
+double rSpeed = 0;
 
 Chassis::Chassis():_imu(55, 0x28), _lEnc(18, 31, 1), _rEnc(19, 38, 0)
 {
@@ -37,10 +39,16 @@ uint8_t Chassis::getREncInt(){
   return _rEnc.getIntPin();
 }
 void Chassis::updLEnc(){
-  _lEnc.read();
+  if(lSpeed<0)
+    _lEnc.read(true);
+  else
+    _lEnc.read(false);
 }
 void Chassis::updREnc(){
-  _rEnc.read();
+  if(rSpeed<0)
+    _rEnc.read(true);
+  else
+    _rEnc.read(false);
 }
 double totalErr = 0;
 bool Chassis::turnTo(double deg){
@@ -52,19 +60,22 @@ bool Chassis::turnTo(double deg){
   else if(error < -180)
     error += 360;
   totalErr+=error;
-  Serial.print("TURN COUNT: ");
-  Serial.println(counter);
+  
   //Serial.print("ERROR: ");
   //Serial.println(error);
   if(abs(error) > 2.5){
     Serial.println("Moving");
-    _rMotor.run(error * kP + (totalErr*kI));
-    _lMotor.run(error * kP + (totalErr*kI));
+    lSpeed = error * kP + (totalErr*kI);
+    rSpeed = error * kP + (totalErr*kI);
+    _rMotor.run(lSpeed);
+    _lMotor.run(rSpeed);
     counter++;
     return false;
   }
   else{
     Serial.println("Done Turning");
+    Serial.print("TURN COUNT: ");
+    Serial.println(counter);
     _rMotor.run(0);
     _lMotor.run(0);
     totalErr = 0;
@@ -89,13 +100,15 @@ bool Chassis::goMm(double mm){
     //Serial.print(" rmotor power: ");
     //Serial.println((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
     if((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI))<0) {
-      speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -35);
+      speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -30);
     }
     else {
-      speed = max((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), 35);
+      speed = max((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), 30);
     }
-    _lMotor.run(-1*speed);
-    _rMotor.run(speed);
+    lSpeed = -1*speed;
+    rSpeed = speed;
+    _lMotor.run(lSpeed);
+    _rMotor.run(rSpeed);
 //    Serial.println("RUNNING");
     counter++;
     return false;

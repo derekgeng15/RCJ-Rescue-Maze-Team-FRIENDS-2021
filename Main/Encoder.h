@@ -9,7 +9,7 @@ class Encoder {
     volatile int16_t count;
     Encoder();
     Encoder(uint8_t i, uint8_t n, int reversed);   // constructor
-    void read();
+    void read(bool backwards);
     void reset();
     int getCount();
     uint8_t getIntPin();
