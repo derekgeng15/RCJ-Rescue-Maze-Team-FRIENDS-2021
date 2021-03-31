@@ -4,7 +4,7 @@ double counter = 0;
 double lSpeed = 0;
 double rSpeed = 0;
 
-Chassis::Chassis():_imu(55, 0x28), _lEnc(18, 31, 1), _rEnc(19, 38, 0)
+Chassis::Chassis():_imu(55, 0x28)//, _lEnc(18, 31, 1), _rEnc(19, 38, 0)
 {
   //_imu = Adafruit_BNO055(55, 0x28);
   _lMotor = MeMegaPiDCMotor(PORT1B);
@@ -52,21 +52,27 @@ void Chassis::updREnc(){
 }
 double totalErr = 0;
 bool Chassis::turnTo(double deg){
-  static double kP = 2.7;
-  double kI = 0.06;
+  static double kP = 6;
+  double kI = 0.004;
   double error = deg - (yaw * 180 / PI);
   if(error > 180)
     error = 360 - error;
   else if(error < -180)
     error += 360;
-  totalErr+=error;
   
-  //Serial.print("ERROR: ");
-  //Serial.println(error);
-  if(abs(error) > 2.5){
-    Serial.println("Moving");
-    lSpeed = error * kP + (totalErr*kI);
-    rSpeed = error * kP + (totalErr*kI);
+  if(abs(error) < 90) 
+   totalErr+=error;
+  
+  if(error * kP + (totalErr*kI) < 0) {
+     lSpeed = min(error * kP + (totalErr*kI), -60);
+     rSpeed = min(error * kP + (totalErr*kI), -60);
+  }
+  else {
+    lSpeed = max(error * kP + (totalErr*kI), 60);
+    rSpeed = max(error * kP + (totalErr*kI), 60);
+  }
+  
+  if(abs(error) > 1){
     _rMotor.run(lSpeed);
     _lMotor.run(rSpeed);
     counter++;
@@ -86,24 +92,18 @@ bool Chassis::turnTo(double deg){
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 0.6;
+  static double kP = 1.0;
   static double kD = 0;
-  double kI = 0.01;
+  double kI = 0.00;
   double speed;
   lTotalErr+=(encPerMm * mm - lEncCt);
   rTotalErr+=(encPerMm * mm - rEncCt);
   if(abs(lEncCt - (encPerMm * mm))>9){
-    //Serial.print("ERROR: ");
-    //Serial.println(lEncCt - (encPerMm * mm));
-    //Serial.print(" lmotor power: ");
-    //Serial.println((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD);
-    //Serial.print(" rmotor power: ");
-    //Serial.println((encPerMm * mm - rEncCt)  * kP + (rEncCt - prEncCt) * kD);
     if((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI))<0) {
-      speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -30);
+      speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -35);
     }
     else {
-      speed = max((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), 30);
+      speed = max((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), 35);
     }
     lSpeed = -1*speed;
     rSpeed = speed;
@@ -130,6 +130,12 @@ void Chassis::reset(){
   _rEnc.reset();
   lEncCt = 0;
   rEncCt = 0;
+}
+void Chassis::updateEnc() {
+  plEncCt = lEncCt;
+  prEncCt = rEncCt;
+  lEncCt = _lEnc.getCount();
+  rEncCt = _rEnc.getCount();
 }
 void Chassis::read(){
   plEncCt = lEncCt;

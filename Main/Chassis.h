@@ -39,6 +39,7 @@ class Chassis{
     void reset();
     void read();
     void print();
+    void updateEnc();
     
   
 };

@@ -49,7 +49,7 @@ void begin(){
 }
 void readSensors(){//read all sensors
   _chassis->read();
-  _laser->read();  
+  //_laser->read();  
 }
 void print(){
   Serial.println("--------------------");
@@ -59,6 +59,7 @@ void print(){
 }
 void readTile(){//read Tile data and send to PI
   String walls = ""; //Front, Right, Back, Left (Clockwise)
+  _laser->read();
   if(_laser->getDist(0) < threshold) {
     walls+="1";
     Serial.println("First Sensor Seen");
@@ -91,8 +92,10 @@ bool followPath(){//TODO: Add state machine for following
        * if see black, call ai blackout(rPI serial)
        * 
        */
+  //readSensors();
   switch(fstate){
     case FSTATE::TURNING:{
+      readSensors();
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
         currDir = (currDir + getDir(path[step]))%4;
         fstate  = FORWARD;
@@ -101,8 +104,8 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::FORWARD:{
-      
-      if(_chassis->goMm(280)){
+      _chassis->updateEnc();
+      if(_chassis->goMm(330)){
         step++;
         fstate = TURNING;
         if(step == path.length())
