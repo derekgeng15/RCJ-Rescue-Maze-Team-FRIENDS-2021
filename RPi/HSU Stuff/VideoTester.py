@@ -12,7 +12,7 @@ while(cap.isOpened()):
     ret, frame = cap.read()
     # Display the resulting frame
     cv2.imshow('Camera1',frame)
-    print(getLetter2(frame))
+    print(getLetter(frame))
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 cap.release()

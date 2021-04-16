@@ -3,6 +3,9 @@ import time
 from nav import Nav
 import math
 import struct
+import numpy as np
+import cv2
+from LetterDetector import *
 
 def clearFile():
         print("Clearing file!")
@@ -13,6 +16,7 @@ def clearFile():
 
 clearFile()
 
+cap = cv2.VideoCapture(0)
 AI = Nav(readInWall=False)
 
 int_encode = b'2'
@@ -107,3 +111,21 @@ while True:
             print ("Something Bad Happened!")
             print(e)
         time.sleep(0.25)
+
+    # Victim Deteciton Loop
+    while(cap.isOpened() and ser.in_waiting == 0):
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+        # Display the resulting frame
+        cv2.imshow('Camera1',frame)
+        letter = getLetter(frame)
+        if letter!=None:
+            #ser.write((commandsMsg).encode())
+            #print("Sent: " + commandsMsg)
+            print("Saw:", letter)
+            cv2.destroyAllWindows()
+            break
+        else:
+            print("Saw Nothing!")
+
+cap.release()
