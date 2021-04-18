@@ -94,9 +94,21 @@ bool followPath(){//TODO: Add state machine for following
        */
   //readSensors();
   switch(fstate){
+    case FSTATE::CALC:{
+      _lazer.read();
+      double sE = 0, double fE = 330;
+      if(_lazer.getDist(0) != -1)
+        fE = fmod(_lazer.getDist(0), 300) + 150;
+      if(_lazer.getDist(3) != -1 && _lazer.getDist(2) != -1)
+        sE = _lazer.getDist(3) - _lazer.getDist(2);
+      angAdj = atan2(sE, fE);
+      forward = sqrt(fE * fE + sE * sE);
+      fstate = TURNING;
+      break;
+    }
     case FSTATE::TURNING:{
       readSensors();
-      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
+      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4] + angAdj)){
         currDir = (currDir + getDir(path[step]))%4;
         fstate  = FORWARD;
         _chassis->reset();
@@ -105,9 +117,17 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::FORWARD:{
       _chassis->updateEnc();
-      if(_chassis->goMm(330)){
+      if(_chassis->goMm(forward)){
+        fstate = ADJ;
+      }
+      break;
+    }
+    case FSTATE::ADJ{
+      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
+        currDir = (currDir + getDir(path[step]))%4;
+        fstate = CALC;
         step++;
-        fstate = TURNING;
+        _chassis->reset();
         if(step == path.length())
           return true;
       }

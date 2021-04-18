@@ -2,6 +2,7 @@
 
 #include <Wire.h>
 #include <Arduino.h>
+#include <math.h>
 
 #include "Chassis.h"
 #include "LaserSystem.h"
@@ -13,14 +14,16 @@
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 enum FSTATE {
-  TURNING, FORWARD
+  CALC, TURNING, FORWARD, ADJ
 }extern fstate;
 
 enum DIRECTION{
   UP, RIGHT, DOWN, LEFT
 }extern currDir;
 
-const double ang[] = {0, 90, 180, 270};
+const double ang[] = {0, 90, 180, -90};
+
+double forward, angAdj;
 
 extern Chassis *_chassis;
 extern LaserSystem *_laser;
