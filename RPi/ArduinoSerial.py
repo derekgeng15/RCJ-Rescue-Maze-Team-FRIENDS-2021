@@ -27,7 +27,7 @@ confirm ="Confirm\n"
 #ser = serial.Serial('/dev/ttyAMA0', 9600)
 
 ser = serial.Serial(
-    port = '/dev/ttyAMA0',
+    port = '/dev/serial0',
     baudrate = 9600,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
@@ -123,8 +123,7 @@ while True:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
             print("Saw:", letter)
-            cv2.destroyAllWindows()
-            break
+            #continue
         else:
             print("Saw Nothing!")
 

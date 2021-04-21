@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import time
-import pytesseract
+#import pytesseract
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+#pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def areaFilter(img):
     contours, h = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # Get all contours for areaFilter to calculate area via contours
@@ -26,9 +26,10 @@ def getLetter(img):
     (height, width, depth) = img.shape
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(gray, 90, 255, cv2.THRESH_BINARY)[1]
-    #dum, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-    
+    thresh = cv2.threshold(gray, 65, 255, cv2.THRESH_BINARY)[1]
+    #dum, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+
+
     # IMAGE INVERTING
     thresh = cv2.bitwise_not(thresh.copy()) # Convert from mostly white to mostly black (since letter is black, and contour detection is on white)
 
@@ -39,12 +40,14 @@ def getLetter(img):
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>65):
+        if(cv2.contourArea(c)>300 and cv2.contourArea(c) < 9000):
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
             cropped = thresh[y:y+h, x:x+w]
+            if 1.8*h < w or 1.8*w < h:
+                continue
             #cv2.imwrite("RPi/HSU Stuff/H-cropped " + str(i) + " .jpg", cropped)
             cv2.imshow("ROI", cropped)
             croppedCopy = cropped.copy()
@@ -52,12 +55,17 @@ def getLetter(img):
             # SLICING TO GET THE THREE REGIONS
             roiy, roix = croppedCopy.shape
             top = croppedCopy[0:(roiy//4),0:roix]
-            mid = croppedCopy[int(roiy*0.37):int(roiy*0.67),0:roix]
+            #mid = croppedCopy[int(roiy*0.37):int(roiy*0.67),0:roix]
+            mid = croppedCopy[8+int(roiy*0.4):int(roiy*0.60),0:roix]
             bot = croppedCopy[int(3*roiy//4):roiy,0:roix]
 
             '''cv2.imwrite("RPi/HSU Stuff/H-Top.jpg", top)
             cv2.imwrite("RPi/HSU Stuff/H-Mid.jpg", mid)
             cv2.imwrite("RPi/HSU Stuff/H-Bot.jpg", bot)'''
+        
+            cv2.imshow("top", top)
+            cv2.imshow("mid", mid)
+            cv2.imshow("bot", bot)
 
             #CONTOURS FOR HSU DETECTION
             (contop, h) = cv2.findContours(top.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -68,8 +76,8 @@ def getLetter(img):
             print("Top: {}, Mid: {}, Bot: {}".format(len(contop), len(conmid), len(conbot)))
             if len(contop) == 2 and len(conmid) == 1 and len(conbot) == 2:
                 return "H"
-            elif len(contop) == 1 and len(conmid) == 1 and len(conbot) == 1:
-                return "S"
+            #elif len(contop) == 1 and len(conmid) == 1 and len(conbot) == 1:
+            #    return "S"
             elif (len(contop) == 2 and len(conmid) == 2 and len(conbot) == 1) or (len(contop) == 1 and len(conmid) == 2 and len(conbot) == 2):
                 return "U"
             else:
@@ -81,7 +89,7 @@ def getLetter(img):
 print(getLetter(img))'''
 
 # USING PYTESSERACT -------------------------------------------------------------
-
+"""
 def getLetter2(img):
     (height, width, depth) = img.shape
     #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -129,3 +137,4 @@ def getLetter2(img):
                 return "U"
             else:
                 return None
+"""
