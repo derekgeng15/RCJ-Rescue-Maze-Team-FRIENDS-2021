@@ -17,6 +17,11 @@ def clearFile():
 clearFile()
 
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+cap.set(cv2.CAP_PROP_FPS,10)
+frameCount = 0
+
 AI = Nav(readInWall=False)
 
 int_encode = b'2'
@@ -97,7 +102,7 @@ while True:
     commandsMsg = commandsMsg + '\n'
 
     ser.write((commandsMsg).encode())
-    print("Printed: " + commandsMsg)
+    print("Send Command: " + commandsMsg)
     done = False
     while not done:
         try:
@@ -118,7 +123,11 @@ while True:
         ret, frame = cap.read()
         # Display the resulting frame
         cv2.imshow('Camera1',frame)
-        letter = getLetter(frame)
+        cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
+
+        letter = getLetter(frame, True, frameCount)
+        frameCount+=1
+
         if letter!=None:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
