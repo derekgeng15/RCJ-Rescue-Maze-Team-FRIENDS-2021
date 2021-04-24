@@ -22,6 +22,17 @@ def areaFilter(img):
     
     return img
 
+def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
+    """
+    Return the rotated and scaled image. 
+    By default the border_mode arg is BORDER_CONSTANT
+    """
+    (h, w) = i.shape[:2]
+    print ("h:{0}  w:{1}".format(h,w))
+    center = (w // 2, h // 2)
+    M = cv2.getRotationMatrix2D(center, angle, scale)
+    return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
+
 def getLetter(img, frameCounting=False, frameCount=1): #if we want to export imgs
     (height, width, depth) = img.shape
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -42,18 +53,27 @@ def getLetter(img, frameCounting=False, frameCount=1): #if we want to export img
     areaFiltered = areaFilter(thresh)
     areaFilteredCopy = areaFiltered.copy()
 
+    cv2.imshow("areaFilteredCopy", areaFilteredCopy)
+    if frameCounting:
+        cv2.imwrite("imgs/areaFilteredCopy - " + str(frameCount) + ".png", areaFilteredCopy)
+
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>300 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>1000 and cv2.contourArea(c) < 10000):
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
             cropped = thresh[y:y+h, x:x+w]
-            if 1.8*h < w or 1.8*w < h:
+            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
                 continue
             #cv2.imwrite("RPi/HSU Stuff/H-cropped " + str(i) + " .jpg", cropped)
+            
+            #CHECKING IF WE NED TO ROTATE ROI 
+            if (w >= h):  #width must be smaller than height
+                cropped = RotateImage(cropped,90,1.0)
+            
             cv2.imshow("ROI", cropped)
             if frameCounting:
                 cv2.imwrite("imgs/ROI - " + str(frameCount) + ".png", cropped)
@@ -84,8 +104,8 @@ def getLetter(img, frameCounting=False, frameCount=1): #if we want to export img
             print("Top: {}, Mid: {}, Bot: {}".format(len(contop), len(conmid), len(conbot)))
             if len(contop) == 2 and len(conmid) == 1 and len(conbot) == 2:
                 return "H"
-            #elif len(contop) == 1 and len(conmid) == 1 and len(conbot) == 1:
-            #    return "S"
+            elif len(contop) == 1 and len(conmid) == 1 and len(conbot) == 1:
+                return "S"
             elif (len(contop) == 2 and len(conmid) == 2 and len(conbot) == 1) or (len(contop) == 1 and len(conmid) == 2 and len(conbot) == 2):
                 return "U"
             else:
