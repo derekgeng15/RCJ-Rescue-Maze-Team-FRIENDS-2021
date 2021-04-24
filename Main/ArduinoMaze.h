@@ -1,6 +1,9 @@
+
 #pragma once
 
 #include <Wire.h>
+#include <SparkFunMLX90614.h>
+
 #include <Arduino.h>
 
 #include "Chassis.h"

@@ -6,6 +6,8 @@ DIRECTION currDir;
 Chassis *_chassis;
 LaserSystem *_laser;
 SA *_comm;
+IRTherm therm1;
+IRTherm therm2;
 
 double threshold = 200;
 String path;
@@ -43,6 +45,17 @@ void begin(){
   _chassis->init();
   _chassis->reset();
   _laser->init();
+  if (therm1.begin(0x5a) == false) {
+    Serial.println("Qwiic IR thermometer 1 did not acknowledge! Running I2C scanner.");
+    while(1);
+  }
+  if (therm2.begin(0x5b) == false) {
+    Serial.println("Qwiic IR thermometer 2 did not acknowledge! Running I2C scanner.");
+    while(1);
+  }
+  therm1.setUnit(TEMP_F);
+  therm2.setUnit(TEMP_F);
+  Serial.println("Finished therms");
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   delay(2000);
@@ -60,7 +73,13 @@ void print(){
 void readTile(){//read Tile data and send to PI
   String walls = ""; //Front, Right, Back, Left (Clockwise)
   _laser->read();
-  if(_laser->getDist(0) < threshold) {
+  Serial.print(_laser->getDist(1));
+  Serial.print(" ");
+  Serial.print(_laser->getDist(3));
+  Serial.print(" ");
+  Serial.print(_laser->getDist(2));
+  Serial.println(" ");
+  if(_laser->getDist(1) < threshold) {
     walls+="1";
     Serial.println("First Sensor Seen");
   }
@@ -105,6 +124,14 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::FORWARD:{
       _chassis->updateEnc();
+      if(therm1.read()) {
+        Serial.print("Temp 1: ");
+        Serial.print(String(therm1.object(), 2));
+      }
+      if(therm2.read()) {
+        Serial.print(" Temp 2: ");
+        Serial.println(String(therm2.object(), 2));
+      }
       if(_chassis->goMm(330)){
         step++;
         fstate = TURNING;
