@@ -22,25 +22,25 @@ void setup()
 void loop()
 {
   
-//  readSensors();
-  switch(state){
-    case STATE::READING:{
-      readSensors();
-      readTile();
-      _comm->writeOut("Gib command");
-      getPath();
-      state = STATE::FOLLOWING;
-      break;
-    }
-    case STATE::FOLLOWING:{
-      if(followPath())
-        state = STATE::READING;
-      break;
-    }
-  }
-  
+  readSensors();
+//  switch(state){
+//    case STATE::READING:{
+//      readSensors();
+//      readTile();
+//      _comm->writeOut("Gib command");
+//      getPath();
+//      state = STATE::FOLLOWING;
+//      break;
+//    }
+//    case STATE::FOLLOWING:{
+//      if(followPath())
+//        state = STATE::READING;
+//      break;
+//    }
+//  }
+//  
   //print();
   //_chassis->turnTo(-90);
   
-//  test("URL");
+  test("UURUL");
 }
