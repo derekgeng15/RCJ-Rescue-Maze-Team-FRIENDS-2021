@@ -1,6 +1,6 @@
 #include "ArduinoMaze.h"
 
-FSTATE fstate = TURNING;
+FSTATE fstate = CALC;
 DIRECTION currDir;
 
 Chassis *_chassis;
@@ -8,8 +8,9 @@ LaserSystem *_laser;
 SA *_comm;
 
 double threshold = 200;
+double forward, angAdj;
 String path;
-int step;
+int step, skip;
 void lMotorEncInterrupt()
 {
   _chassis->updLEnc();
@@ -95,38 +96,49 @@ bool followPath(){//TODO: Add state machine for following
   //readSensors();
   switch(fstate){
     case FSTATE::CALC:{
-      _lazer.read();
-      double sE = 0, double fE = 330;
-      if(_lazer.getDist(0) != -1)
-        fE = fmod(_lazer.getDist(0), 300) + 150;
-      if(_lazer.getDist(3) != -1 && _lazer.getDist(2) != -1)
-        sE = _lazer.getDist(3) - _lazer.getDist(2);
-      angAdj = atan2(sE, fE);
-      forward = sqrt(fE * fE + sE * sE);
+      skip = step + 1;
+//      while(skip < path.length() && path[skip] == 'U')
+//        skip++;
       fstate = TURNING;
       break;
     }
     case FSTATE::TURNING:{
-      readSensors();
-      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4] + angAdj)){
+      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
         currDir = (currDir + getDir(path[step]))%4;
-        fstate  = FORWARD;
+        _laser->read();
+        angAdj = 0;
+        double fe = TILE_SIZE;
+        if(min(_laser->getDist(0), _laser->getDist(1)) < 8000)
+            fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE) + (TILE_SIZE)/2 + 82;
+        if(_laser->getDist(2) < TILE_SIZE)
+            angAdj =  -atan2(_laser->getDist(2) - TILE_SIZE/2 + 44, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
+        if(_laser->getDist(3) < TILE_SIZE)
+            angAdj =  atan2(_laser->getDist(3) - TILE_SIZE/2 + 7, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
+        forward = ((skip - step - 1) * (TILE_SIZE) + fe) / cos(PI / 180 * angAdj) ;
+        _laser->print();
+        Serial.println(forward);
+        Serial.println(angAdj);
+        fstate  = TURNADJ;
+      }
+      break;
+    }
+    case FSTATE::TURNADJ:{
+      if(_chassis->turnTo(ang[currDir] + angAdj)){
         _chassis->reset();
+        fstate = FORWARD;
       }
       break;
     }
     case FSTATE::FORWARD:{
-      _chassis->updateEnc();
       if(_chassis->goMm(forward)){
-        fstate = ADJ;
+        fstate = FORADJ;
       }
       break;
     }
-    case FSTATE::ADJ{
-      if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
-        currDir = (currDir + getDir(path[step]))%4;
+    case FSTATE::FORADJ:{
+      if(_chassis->turnTo(ang[currDir])){
         fstate = CALC;
-        step++;
+        step = skip;
         _chassis->reset();
         if(step == path.length())
           return true;

@@ -64,12 +64,12 @@ bool Chassis::turnTo(double deg){
    totalErr+=error;
   
   if(error * kP + (totalErr*kI) < 0) {
-     lSpeed = min(error * kP + (totalErr*kI), -60);
-     rSpeed = min(error * kP + (totalErr*kI), -60);
+     lSpeed = min(error * kP + (totalErr*kI), -70);
+     rSpeed = min(error * kP + (totalErr*kI), -70);
   }
   else {
-    lSpeed = max(error * kP + (totalErr*kI), 60);
-    rSpeed = max(error * kP + (totalErr*kI), 60);
+    lSpeed = max(error * kP + (totalErr*kI), 70);
+    rSpeed = max(error * kP + (totalErr*kI), 70);
   }
   
   if(abs(error) > 1){
