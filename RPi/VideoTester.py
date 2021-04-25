@@ -5,7 +5,7 @@ from LetterDetector import *
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-cap.set(cv2.CAP_PROP_FPS,10)
+cap.set(cv2.CAP_PROP_FPS,30)
 
 while(cap.isOpened()):
     # Capture frame-by-frame

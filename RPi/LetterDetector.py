@@ -33,14 +33,18 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
     M = cv2.getRotationMatrix2D(center, angle, scale)
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
-def getLetter(img, frameCounting=False, frameCount=1): #if we want to export imgs
+def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     (height, width, depth) = img.shape
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (9, 9), 6)
     thresh = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)[1]
 
-    thresh[0:30, :] = 255
-    cv2.imshow("thresh", thresh)
+    #Cutting to get rid of treads and stuff
+    #Current Cuts are for sideways-angled camera
+    #thresh[:, 0:35] = 255
+    #thresh[:, width-70:width] = 255
+    if showFrame:
+        cv2.imshow("thresh", thresh)
     if frameCounting:
         cv2.imwrite("imgs/thresh - " + str(frameCount) + ".png", thresh)
     #dum, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
@@ -53,14 +57,15 @@ def getLetter(img, frameCounting=False, frameCount=1): #if we want to export img
     areaFiltered = areaFilter(thresh)
     areaFilteredCopy = areaFiltered.copy()
 
-    cv2.imshow("areaFilteredCopy", areaFilteredCopy)
+    if showFrame:
+        cv2.imshow("areaFilteredCopy", areaFilteredCopy)
     if frameCounting:
         cv2.imwrite("imgs/areaFilteredCopy - " + str(frameCount) + ".png", areaFilteredCopy)
 
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>1000 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>100 and cv2.contourArea(c) < 10000):
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
@@ -74,7 +79,8 @@ def getLetter(img, frameCounting=False, frameCount=1): #if we want to export img
             if (w >= h):  #width must be smaller than height
                 cropped = RotateImage(cropped,90,1.0)
             
-            cv2.imshow("ROI", cropped)
+            if showFrame:
+                cv2.imshow("ROI", cropped)
             if frameCounting:
                 cv2.imwrite("imgs/ROI - " + str(frameCount) + ".png", cropped)
             #   cv2.imwrite("imgs/ROI.png", cropped)

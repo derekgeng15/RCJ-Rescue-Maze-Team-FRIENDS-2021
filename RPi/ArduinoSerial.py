@@ -19,8 +19,11 @@ clearFile()
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-cap.set(cv2.CAP_PROP_FPS,10)
+cap.set(cv2.CAP_PROP_FPS,30)
 frameCount = 0
+
+frame_size = (320, 240)  #Width, Height
+#result = cv2.VideoWriter('imgs/cam.mp4', cv2.VideoWriter_fourcc(*'MLPG'), 10, frame_size)
 
 AI = Nav(readInWall=False)
 
@@ -60,7 +63,7 @@ while True:
         except IOError as e:
             print ("Something Bad Happened!")
             print(e)
-        time.sleep(0.25)
+        time.sleep(0.05)
     ser.flush()
     ser.write("Confirm\n".encode())
     print("Responded to Arduino Confirm!")
@@ -81,7 +84,7 @@ while True:
         except IOError as e:
             print ("Something Bad Happened!")
             print(e)
-        time.sleep(0.25)
+        time.sleep(0.05)
     ser.flush()
     ser.write("Confirm\n".encode())
     print("Responded to Arduino Confirm!")
@@ -115,17 +118,19 @@ while True:
         except IOError as e:
             print ("Something Bad Happened!")
             print(e)
-        time.sleep(0.25)
+        time.sleep(0.05)
 
     # Victim Deteciton Loop
+    letterBuffer = [None,None,None]
     while(cap.isOpened() and ser.in_waiting == 0):
         # Capture frame-by-frame
         ret, frame = cap.read()
         # Display the resulting frame
-        cv2.imshow('Camera1',frame)
+        #cv2.imshow('Camera1',frame)
         cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
-
-        letter = getLetter(frame, True, frameCount)
+        #result.write(frame)
+        
+        letter = getLetter(frame, showFrame=False, frameCounting=True, frameCount=frameCount)
         frameCount+=1
 
         if letter!=None:
@@ -135,5 +140,25 @@ while True:
             #continue
         else:
             print("Saw Nothing!")
+        
+        letterBuffer.append(letter)
+        letterBuffer.pop(0)
+        if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
+            print("Sent Letter to Arduino:", letter)
+            '''ser.write((letter).encode())
+            done = False
+            while not done:
+                try:
+                    while(ser.in_waiting > 0): #if there's something in the buffer
+                        pass
+                    print("Got confirm message:")
+                    x = ser.read_until("\n")
+                    print("Got:", x.decode("ascii"), end="\n")
+                    done = True
+                except IOError as e:
+                    print ("Something Bad Happened!")
+                    print(e)
+                time.sleep(0.05)'''
 
+result.release()
 cap.release()
