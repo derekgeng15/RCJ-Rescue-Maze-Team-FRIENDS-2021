@@ -22,6 +22,10 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 cap.set(cv2.CAP_PROP_FPS,30)
 frameCount = 0
 
+# Warming Up the camera
+ret, frame = cap.read()
+time.sleep(1)
+
 frame_size = (320, 240)  #Width, Height
 #result = cv2.VideoWriter('imgs/cam.mp4', cv2.VideoWriter_fourcc(*'MLPG'), 10, frame_size)
 
@@ -127,25 +131,27 @@ while True:
         ret, frame = cap.read()
         # Display the resulting frame
         #cv2.imshow('Camera1',frame)
-        cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
+        #cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
         #result.write(frame)
         
-        letter = getLetter(frame, showFrame=False, frameCounting=True, frameCount=frameCount)
-        frameCount+=1
+        letter = getLetter(frame, showFrame=False, frameCounting=False, frameCount=frameCount)
 
         if letter!=None:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
-            print("Saw:", letter)
+            print("Saw:", letter, "at frame -", frameCount)
             #continue
         else:
-            print("Saw Nothing!")
+            print("Saw Nothing! -", frameCount)
         
+        frameCount+=1
+
         letterBuffer.append(letter)
         letterBuffer.pop(0)
         if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
             print("Sent Letter to Arduino:", letter)
-            '''ser.write((letter).encode())
+            ser.write((letter).encode())
+            ser.flush()
             done = False
             while not done:
                 try:
@@ -155,10 +161,12 @@ while True:
                     x = ser.read_until("\n")
                     print("Got:", x.decode("ascii"), end="\n")
                     done = True
+                    print("Buffer State:", ser.in_waiting)
                 except IOError as e:
                     print ("Something Bad Happened!")
                     print(e)
-                time.sleep(0.05)'''
+                time.sleep(0.05)
+            break
 
 result.release()
 cap.release()
