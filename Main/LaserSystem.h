@@ -30,7 +30,7 @@ class LaserSystem{
     double dist[NUM_OF_SENSORS];
   public:
     void init();
-    void read();
+    void readAll();
     void print();
     double getDist(int ID);
 };

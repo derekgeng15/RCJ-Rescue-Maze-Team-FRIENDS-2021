@@ -37,7 +37,7 @@ class Chassis{
     bool turnTo(double deg);
     bool goMm(double mm);
     void reset();
-    void read();
+    void readChassis();
     void print();
     void updateEnc();
     

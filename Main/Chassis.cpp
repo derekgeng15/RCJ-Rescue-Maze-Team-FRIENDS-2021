@@ -14,6 +14,7 @@ Chassis::Chassis():_imu(55, 0x28)//, _lEnc(18, 31, 1), _rEnc(19, 38, 0)
 }
 
 void Chassis::init(){
+  Serial.println("Starting bno");
   if(!_imu.begin(Adafruit_BNO055::OPERATION_MODE_IMUPLUS)){
     Serial.println("Cannot find BNO");
     while(1);
@@ -137,7 +138,7 @@ void Chassis::updateEnc() {
   lEncCt = _lEnc.getCount();
   rEncCt = _rEnc.getCount();
 }
-void Chassis::read(){
+void Chassis::readChassis(){
   plEncCt = lEncCt;
   prEncCt = rEncCt;
   lEncCt = _lEnc.getCount();

@@ -29,7 +29,8 @@ double LaserSystem::getDist(int ID){
   return dist[ID];
 }
 
-void LaserSystem::read(){
+void LaserSystem::readAll(){
+    Serial.println("READING LASERS");
     for(int i = 0; i < NUM_OF_SENSORS; i++){
       laser[i].rangingTest(&measure[i], false);
       dist[i] = -1;
