@@ -155,3 +155,8 @@ void Chassis::print(){
   Serial.print(" Yaw: ");
   Serial.println(yaw * 180 / PI);
 }
+
+void Chassis::runMotors(double power) {
+  _lMotor.run(power);
+  _rMotor.run(-1*power);
+}

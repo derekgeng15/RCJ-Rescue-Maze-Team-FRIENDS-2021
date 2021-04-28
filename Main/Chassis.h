@@ -40,6 +40,7 @@ class Chassis{
     void readChassis();
     void print();
     void updateEnc();
+    void runMotors(double power);
     
   
 };

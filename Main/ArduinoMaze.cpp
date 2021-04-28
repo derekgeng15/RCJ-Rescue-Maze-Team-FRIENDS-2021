@@ -102,11 +102,13 @@ void getPath(){//get BFS path from PI
   step = 0;
 }
 
+
 bool followPath(){//TODO: Add state machine for following
   /*
        * if see black, call ai blackout(rPI serial)
        * 
        */
+  String letter;
   //readSensors();
   switch(fstate){
     case FSTATE::CALC:{
@@ -144,6 +146,14 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::FORWARD:{
+      if(path.length()<=1 && Serial2.available()) {
+        letter = _comm->readIn();
+        Serial.print("SAW LETTER: ");
+        Serial.println(letter);
+        _chassis->runMotors(0);
+        delay(2000);
+      }
+      
       _chassis->updateEnc();
 //      if(therm1.read()) {
 //        Serial.print("Temp 1: ");
