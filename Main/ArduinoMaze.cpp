@@ -148,10 +148,17 @@ bool followPath(){//TODO: Add state machine for following
     case FSTATE::FORWARD:{
       if(path.length()<=1 && Serial2.available()) {
         letter = _comm->readIn();
-        Serial.print("SAW LETTER: ");
-        Serial.println(letter);
-        _chassis->runMotors(0);
-        delay(2000);
+        _laser->readAll();
+        _laser->print();
+        Serial.println("\nRECIEVED SOMETHING\n");
+        if(_laser->getDist(2)<200) {
+          Serial.println("Stopping motors");
+          _chassis->runMotors(0);
+          Serial.print("SAW LETTER: ");
+          Serial.println(letter);
+          delay(2000);
+        }
+        
       }
       
       _chassis->updateEnc();
