@@ -123,9 +123,9 @@ bool followPath(){//TODO: Add state machine for following
         currDir = (currDir + getDir(path[step]))%4;
         _laser->readAll();
         angAdj = 0;
-        double fe = TILE_SIZE + 20;
+        double fe = TILE_SIZE + 50;
         if(min(_laser->getDist(0), _laser->getDist(1)) < 450)
-            fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE) + (TILE_SIZE)/2 + 82;
+            fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE) + (TILE_SIZE)/2 + 120;
         if(_laser->getDist(2) < TILE_SIZE)
             angAdj =  -atan2(_laser->getDist(2) - TILE_SIZE/2 + 44, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
         if(_laser->getDist(3) < TILE_SIZE)
