@@ -41,7 +41,7 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
 
     #Cutting to get rid of treads and stuff
     #Current Cuts are for sideways-angled camera
-    #thresh[:, 0:35] = 255
+    thresh[:, 0:25] = 255
     #thresh[:, width-70:width] = 255
     if showFrame:
         cv2.imshow("thresh", thresh)
