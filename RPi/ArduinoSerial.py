@@ -151,9 +151,9 @@ while True:
         letterBuffer.pop(0)
         if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
             print("Sent Letter to Arduino:", letter)
-            ser.write((letter).encode())
-            ser.flush()
-            done = False
+            '''ser.write((letter).encode())
+            ser.flush()'''
+            '''done = False
             while not done:
                 try:
                     while(ser.in_waiting > 0): #if there's something in the buffer
@@ -166,7 +166,7 @@ while True:
                 except IOError as e:
                     print ("Something Bad Happened!")
                     print(e)
-                time.sleep(0.05)
+                time.sleep(0.05)'''
             break
 
 result.release()

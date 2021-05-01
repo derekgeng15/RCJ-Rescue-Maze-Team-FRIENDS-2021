@@ -34,14 +34,14 @@ AI = Nav(readInWall=False)
 
 while True:
     # Reading in Wall Data for current tile from Arduino
-    msg = comm.readIn()
+    msg = comm.read()
     for i in range(4):
             if(msg[i]=="1"):
                 AI.markWall((i + AI.direction) % 4)
 
 
     # Waiting for Arduino to request Commands
-    msg = comm.readIn()
+    msg = comm.read()
     
     # Command Logic
     commands = AI.calculate()
@@ -61,11 +61,12 @@ while True:
 
     # Writing 
     print("Sending Commands. . .")
-    comm.writeOut()
+    comm.write(commandsMsg)
 
     # Victim Deteciton Loop
+    print("Starting Victim Detection")
     letterBuffer = [None,None,None]
-    while(cap.isOpened() and ser.in_waiting == 0):
+    while(cap.isOpened() and comm.in_waiting == 0):
         # Capture frame-by-frame
         ret, frame = cap.read()
         # Display the resulting frame
@@ -89,7 +90,8 @@ while True:
         letterBuffer.pop(0)
         if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
             print("Sent Letter to Arduino:", letter)
-            comm.writeOut(letter)
+            #comm.writeOut(letter)
+    print("Finished Detection!")
 
 #result.release()
 cap.release()

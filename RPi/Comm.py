@@ -19,6 +19,9 @@ ser = serial.Serial(
     timeout=1
 )
 
+def in_waiting():
+    return ser.in_waiting
+
 # Just waits for buffer to be availble, and then reads it in
 def read():
     done = False
@@ -37,13 +40,13 @@ def read():
             print ("Something Bad Happened!")
             print(e)
         time.sleep(0.05)
-    ser.flush()
+    #ser.flush()
     return msg
 
 # Just writes a message to arduino
 def write(msg):
     ser.write((msg+"\n").encode())
-    ser.flush()
+    #ser.flush()
     print("Wrote:\"", msg, "\" to arduino")
 
 # Read and then write a confirm message
