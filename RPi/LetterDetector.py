@@ -5,7 +5,7 @@ import time
 
 #pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-def areaFilter(img):
+'''def areaFilter(img):
     contours, h = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # Get all contours for areaFilter to calculate area via contours
     
     # Calculating areas of each contour
@@ -20,6 +20,22 @@ def areaFilter(img):
             if i != correctContour:
                 cv2.drawContours(img, contours, i, (0,0,0), cv2.FILLED)
     
+    return img'''
+
+def areaFilter(img):
+    contours, h = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # Get all contours for areaFilter to calculate area via contours
+    
+    # Calculating areas of each contour
+    areas = []
+    for i in range(0,len(contours)):        
+        area = cv2.contourArea(contours[i])
+        areas.append(area)
+
+    if len(areas) > 0:
+        for i in range(0, len(contours)):
+            if areas[i] < 400:
+                cv2.drawContours(img, contours, i, (0,0,0), cv2.FILLED)
+    
     return img
 
 def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
@@ -32,6 +48,8 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, scale)
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
+
+#------------------------------------------------------------------------------------------------------
 
 def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     (height, width, depth) = img.shape

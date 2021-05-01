@@ -1,3 +1,4 @@
+# Arduino Serial without Comm Library
 import serial
 import time
 from nav import Nav
