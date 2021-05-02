@@ -17,6 +17,14 @@ def clearFile():
 
 clearFile()
 
+# GPIO Stuff
+# Port 4 on StereoPi
+# Port 22 on MegaPi
+COMPORT = 4 # Make sure this is correct
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(COMPORT, GPIO.OUT)
+GPIO.output(COMPORT, GPIO.LOW)
+
 # Camera Stuff
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
@@ -127,7 +135,7 @@ while True:
         time.sleep(0.05)
 
     # Victim Deteciton Loop
-    letterBuffer = [None,None,None]
+    letterBuffer = [None,None]
     while(cap.isOpened() and ser.in_waiting == 0):
         # Capture frame-by-frame
         ret, frame = cap.read()
@@ -150,11 +158,14 @@ while True:
 
         letterBuffer.append(letter)
         letterBuffer.pop(0)
-        if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
+        #if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
+        if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1]):
+            print("Set Interrupt Pin to High!")
+            GPIO.output(COMPORT, GPIO.HIGH)
             print("Sent Letter to Arduino:", letter)
-            '''ser.write((letter).encode())
-            ser.flush()'''
-            '''done = False
+            ser.write((letter).encode())
+            ser.flush()
+            done = False
             while not done:
                 try:
                     while(ser.in_waiting > 0): #if there's something in the buffer
@@ -167,7 +178,9 @@ while True:
                 except IOError as e:
                     print ("Something Bad Happened!")
                     print(e)
-                time.sleep(0.05)'''
+                time.sleep(0.05)
+            GPIO.output(COMPORT, GPIO.LOW)
+            print("Set Interrupt Pin back to Low!")
             break
 
 result.release()
