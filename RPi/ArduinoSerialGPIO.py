@@ -7,6 +7,7 @@ import struct
 import numpy as np
 import cv2
 from LetterDetector import *
+import RPi.GPIO as GPIO
 
 def clearFile():
         print("Clearing file!")
@@ -26,7 +27,7 @@ GPIO.setup(COMPORT, GPIO.OUT)
 GPIO.output(COMPORT, GPIO.LOW)
 
 # Camera Stuff
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 cap.set(cv2.CAP_PROP_FPS,30)
@@ -164,7 +165,9 @@ while True:
             GPIO.output(COMPORT, GPIO.HIGH)
             print("Sent Letter to Arduino:", letter)
             ser.write((letter).encode())
+            '''
             ser.flush()
+
             done = False
             while not done:
                 try:
@@ -179,6 +182,8 @@ while True:
                     print ("Something Bad Happened!")
                     print(e)
                 time.sleep(0.05)
+            '''
+            time.sleep(0.5)
             GPIO.output(COMPORT, GPIO.LOW)
             print("Set Interrupt Pin back to Low!")
             break
