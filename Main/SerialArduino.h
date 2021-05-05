@@ -11,7 +11,6 @@ class SA{
 
   private:  
     String buff;
-    String readSerial();
     //Direction getDir();
     void writeConfirm();
     void writeSerial(String x);
@@ -19,5 +18,6 @@ class SA{
   public:
     //SA();
     String readIn();
+    String readSerial();
     void writeOut(String x);
 };

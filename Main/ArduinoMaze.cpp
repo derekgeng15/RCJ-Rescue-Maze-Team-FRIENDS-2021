@@ -13,6 +13,8 @@ double threshold = 200;
 double forward, angAdj;
 String path;
 int step, skip;
+
+bool victim = false;
 void lMotorEncInterrupt()
 {
   _chassis->updLEnc();
@@ -20,6 +22,9 @@ void lMotorEncInterrupt()
 void rMotorEncInterrupt()
 {
   _chassis->updREnc();
+}
+void vSerialInterrupt(){
+  victim = true;
 }
 DIRECTION getDir(char c){
   switch(c){
@@ -57,8 +62,10 @@ void begin(){
 //  therm1.setUnit(TEMP_F);
 //  therm2.setUnit(TEMP_F);
 //  Serial.println("Finished therms");
+  pinMode(sPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, RISING);
   delay(2000);
 }
 void readSensors(){//read all sensors
@@ -102,13 +109,30 @@ void getPath(){//get BFS path from PI
   step = 0;
 }
 
+void checkVictim() {
+  String letter;
+  if(path.length()<=1 && victim) {
+        _chassis->runMotors(0);
+        letter = _comm->readSerial();
+        _laser->readAll();
+        _laser->print();
+        Serial.println("\nRECIEVED SOMETHING\n");
+        if(_laser->getDist(2)<200) {
+          Serial.println("Stopping motors");
+          Serial.print("SAW LETTER: ");
+          Serial.println(letter);
+          delay(2000);
+        }
+        victim = false;
+      }
+}
+unsigned long myTime;
 
 bool followPath(){//TODO: Add state machine for following
   /*
        * if see black, call ai blackout(rPI serial)
        * 
        */
-  String letter;
   //readSensors();
   switch(fstate){
     case FSTATE::CALC:{
@@ -142,24 +166,12 @@ bool followPath(){//TODO: Add state machine for following
       if(_chassis->turnTo(ang[currDir] + angAdj)){
         _chassis->reset();
         fstate = FORWARD;
+        myTime = millis();
       }
       break;
     }
     case FSTATE::FORWARD:{
-      if(path.length()<=1 && Serial2.available()) {
-        letter = _comm->readIn();
-        _laser->readAll();
-        _laser->print();
-        Serial.println("\nRECIEVED SOMETHING\n");
-        if(_laser->getDist(2)<200) {
-          Serial.println("Stopping motors");
-          _chassis->runMotors(0);
-          Serial.print("SAW LETTER: ");
-          Serial.println(letter);
-          delay(2000);
-        }
-        
-      }
+      
       
       _chassis->updateEnc();
 //      if(therm1.read()) {

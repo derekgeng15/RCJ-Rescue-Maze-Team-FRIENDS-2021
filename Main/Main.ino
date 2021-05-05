@@ -23,6 +23,7 @@ void loop()
 {
   
   readSensors();
+  checkVictim();
   switch(state){
     case STATE::READING:{
       readSensors();

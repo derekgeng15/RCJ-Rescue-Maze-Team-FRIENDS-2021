@@ -37,6 +37,10 @@ extern SA *_comm;
 extern String path;
 extern int step, skip;
 
+extern bool victim;
+
+const int sPin = 3;
+
 
 
 void lMotorEncInterrupt();
@@ -50,3 +54,4 @@ void print();
 void readTile();
 void getPath();
 bool followPath();
+void checkVictim();
