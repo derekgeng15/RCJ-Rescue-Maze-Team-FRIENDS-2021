@@ -37,7 +37,7 @@ extern SA *_comm;
 extern String path;
 extern int step, skip;
 
-extern bool victim;
+extern volatile bool victim;
 
 const int sPin = 3;
 

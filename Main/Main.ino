@@ -27,6 +27,7 @@ void loop()
   switch(state){
     case STATE::READING:{
       readSensors();
+   
       readTile();
       _comm->writeOut("Gib command");
       getPath();
