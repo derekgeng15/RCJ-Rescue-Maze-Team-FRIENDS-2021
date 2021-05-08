@@ -14,7 +14,7 @@ double forward, angAdj;
 String path;
 int step, skip;
 
-bool victim = false;
+volatile bool victim = false;
 void lMotorEncInterrupt()
 {
   _chassis->updLEnc();
@@ -63,6 +63,7 @@ void begin(){
 //  therm2.setUnit(TEMP_F);
 //  Serial.println("Finished therms");
   pinMode(sPin, INPUT);
+  pinMode(9, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, RISING);
@@ -101,6 +102,7 @@ void readTile(){//read Tile data and send to PI
   }
   else
     walls+="0";
+   checkVictim();
   _comm->writeOut(walls);
 }
 
@@ -111,17 +113,19 @@ void getPath(){//get BFS path from PI
 
 void checkVictim() {
   String letter;
-  if(path.length()<=1 && victim) {
+  if(victim) {
         _chassis->runMotors(0);
         letter = _comm->readSerial();
         _laser->readAll();
         _laser->print();
         Serial.println("\nRECIEVED SOMETHING\n");
-        if(_laser->getDist(2)<200) {
+        if(_laser->getDist(3)<200 && path.length()<=1) {
           Serial.println("Stopping motors");
           Serial.print("SAW LETTER: ");
           Serial.println(letter);
+          digitalWrite(9, HIGH);
           delay(2000);
+          digitalWrite(9, LOW);
         }
         victim = false;
       }
