@@ -13,6 +13,7 @@ double threshold = 200;
 double forward, angAdj;
 String path;
 int step, skip;
+int light;
 
 volatile bool victim = false;
 void lMotorEncInterrupt()
@@ -51,17 +52,17 @@ void begin(){
   _chassis->init();
   _chassis->reset();
   _laser->init();
-//  if (therm1.begin(0x5a) == false) {
-//    Serial.println("Qwiic IR thermometer 1 did not acknowledge! Running I2C scanner.");
-//    while(1);
-//  }
+  if (therm1.begin(0x5a) == false) {
+    Serial.println("Qwiic IR thermometer 1 did not acknowledge! Running I2C scanner.");
+    while(1);
+  }
 //  if (therm2.begin(0x5b) == false) {
 //    Serial.println("Qwiic IR thermometer 2 did not acknowledge! Running I2C scanner.");
 //    while(1);
 //  }
-//  therm1.setUnit(TEMP_F);
+  therm1.setUnit(TEMP_F);
 //  therm2.setUnit(TEMP_F);
-//  Serial.println("Finished therms");
+  Serial.println("Finished therms");
   pinMode(sPin, INPUT);
   pinMode(9, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
@@ -71,12 +72,16 @@ void begin(){
 }
 void readSensors(){//read all sensors
   _chassis->readChassis();
+  light = analogRead(A7);
   //_laser->read();  
 }
 void print(){
   Serial.println("--------------------");
 //  _chassis->print();
   _laser->print();
+  
+  Serial.print("Light: ");
+  Serial.println(light);
   Serial.println("--------------------");
 }
 void readTile(){//read Tile data and send to PI
@@ -113,12 +118,19 @@ void getPath(){//get BFS path from PI
 
 void checkVictim() {
   String letter;
+  if(therm1.read()) {
+        Serial.print("Temp 1: ");
+        Serial.print(String(therm1.object(), 2));
+      }
+   else {
+       Serial.println("Failed therm 1");
+  }
   if(victim) {
         _chassis->runMotors(0);
+        Serial.println("\nRECIEVED SOMETHING\n");
         letter = _comm->readSerial();
         _laser->readAll();
         _laser->print();
-        Serial.println("\nRECIEVED SOMETHING\n");
         if(_laser->getDist(3)<200 && path.length()<=1) {
           Serial.println("Stopping motors");
           Serial.print("SAW LETTER: ");
@@ -178,13 +190,6 @@ bool followPath(){//TODO: Add state machine for following
       
       
       _chassis->updateEnc();
-//      if(therm1.read()) {
-//        Serial.print("Temp 1: ");
-//        Serial.print(String(therm1.object(), 2));
-//      }
-//      else {
-//        Serial.println("Failed therm 1");
-//      }
 //      if(therm2.read()) {
 //        Serial.print(" Temp 2: ");
 //        Serial.println(String(therm2.object(), 2));

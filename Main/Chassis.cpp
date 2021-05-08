@@ -60,7 +60,7 @@ bool Chassis::turnTo(double deg){
     error = 360 - error;
   else if(error < -180)
     error += 360;
-  
+  Serial.println(error);
   if(abs(error) < 90) 
    totalErr+=error;
   
