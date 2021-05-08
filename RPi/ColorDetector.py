@@ -22,27 +22,31 @@ from LetterDetector import *
 def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
     (height, width, depth) = img.shape # BGR Image
     #print("img Shape:", img.shape)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 50, 255, cv2.THRESH_BINARY)[1]
-    cv2.imshow("thresh", thresh)
-    #print(img[height//2][width//2])
+
     blueChannel = img[:,:,0]
     greenChannel = img[:,:,1]
     redChannel = img[:,:,2]
 
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)[1]
+    if showFrame:
+        cv2.imshow("thresh", thresh)
+
+    # Don't detect black letters
+    #thresh[blueChannel < 35 and greenChannel < 35 and redChannel < 35] = 0
+
+    #thresh += 20
+    #print(img[height//2][width//2])
+    areaFilterMin = 1000
+
     # Filtering for Red
     redFilter = np.zeros((height, width), dtype="uint8")
-    redFilterBool = redChannel * 0.435 > greenChannel
+    redFilterBool = redChannel * 0.75 > greenChannel
     redFilter[redFilterBool == True] = 255
     redFiltered = np.bitwise_and(thresh, redFilter)
-    cv2.imshow('redFiltered', redFiltered)
 
-    # Filtering for Green
-    greenFilter = np.zeros((height, width), dtype="uint8")
-    greenFilterBool = greenChannel * 0.5 > redChannel
-    greenFilter[greenFilterBool == True] = 255
-    greenFiltered = np.bitwise_and(thresh, greenFilter)
-    cv2.imshow('greenFiltered', greenFiltered)
+    if showFrame:
+        cv2.imshow('redFiltered', redFiltered)
 
     # Area Filter Contours
     redAreaFiltered = areaFilter(redFiltered)
@@ -51,21 +55,52 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     contours, h = cv2.findContours(redAreaFiltered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     foundRedVictim = False
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>500):
+        if(cv2.contourArea(c)>areaFilterMin):
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.6*h < w or 1.6*w < h: # If image dimensions are unreasonable
+            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundRedVictim = True
-            cv2.imshow("ROI", img[y:y+h, x:x+w])
+            if showFrame:
+                cv2.imshow("ROI", img[y:y+h, x:x+w])
     
     # Victim Detection Logic
     if foundRedVictim:
         return "RED"
-    else:
-        return None
+
+    # Filtering for Green
+    greenFilter = np.zeros((height, width), dtype="uint8")
+    greenFilterBool = greenChannel * 0.55 > redChannel
+    greenFilter[greenFilterBool == True] = 255
+    greenFiltered = np.bitwise_and(thresh, greenFilter)
+    if showFrame:
+        cv2.imshow('greenFiltered', greenFiltered)
+
+    # Area Filter Contours
+    greenAreaFiltered = areaFilter(greenFiltered)
+
+     # Contour Detection
+    contours, h = cv2.findContours(greenAreaFiltered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
+    foundGreenVictim = False
+    for i, c in enumerate(contours):
+        if(cv2.contourArea(c)>areaFilterMin):
+            #GETTING BOUNDING RECTANGLE
+            rect = cv2.boundingRect(c)
+            x,y,w,h = rect
+            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+                continue
+            else:
+                foundGreenVictim = True
+            if showFrame:
+                cv2.imshow("ROI", img[y:y+h, x:x+w])
+    
+    # Victim Detection Logic
+    if foundGreenVictim:
+        return "GREEN"
+    
+    return None
     
     #cv2.waitKey()
 

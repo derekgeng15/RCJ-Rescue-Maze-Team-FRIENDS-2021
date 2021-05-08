@@ -9,7 +9,7 @@ from LetterDetector import *
 #frame = cv2.imread("img-tests/Nothing-test2.png")
 #frame = cv2.imread("img-tests/Nothing-test3.png")
 #frame = cv2.imread("Camera1 - 60.png")
-frame = cv2.imread("imgs/Camera1 - 121.png")
+frame = cv2.imread("imgs/Camera1 - 216.png")
 cv2.imshow("frame", frame)
 
 print("Got:", getLetter(frame))

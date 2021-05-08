@@ -84,7 +84,7 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>500 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>1500 and cv2.contourArea(c) < 10000):
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)

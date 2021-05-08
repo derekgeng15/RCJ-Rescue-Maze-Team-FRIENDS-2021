@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from LetterDetector import *
+from ColorDetector import *
 
 cap = cv2.VideoCapture(0) # Right
 cap1 = cv2.VideoCapture(1) # Left
@@ -15,9 +16,21 @@ while(cap.isOpened()):
     ret, frame = cap.read()
     ret2, frame2 = cap1.read()
     # Display the resulting frame
-    cv2.imshow('VideoCapture0',frame)
+    #cv2.imshow('VideoCapture0',frame)
     cv2.imshow('Capture1',frame2)
-    print(getLetter(frame))
+
+    color = getColorVictimVectorized(frame, showFrame=True)
+    if color == None:
+        print(getLetter(frame))
+    else:
+        print(color)
+
+    '''letter = getLetter(frame, showFrame=True)
+    if letter == None:
+        print(getColorVictimVectorized(frame))
+    else:
+        print(letter)'''
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 cap.release()

@@ -7,6 +7,7 @@ import struct
 import numpy as np
 import cv2
 from LetterDetector import *
+from ColorDetector import *
 import RPi.GPIO as GPIO
 
 def clearFile():
@@ -146,7 +147,7 @@ while True:
         #cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
         #result.write(frame)
         
-        letter = getLetter(frame, showFrame=False, frameCounting=False, frameCount=frameCount)
+        '''letter = getLetter(frame, showFrame=False, frameCounting=False, frameCount=frameCount)
 
         if letter!=None:
             #ser.write((commandsMsg).encode())
@@ -155,19 +156,32 @@ while True:
             cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
             #continue 
         else:
+            print("Saw Nothing! -", frameCount)'''
+
+        victim = getColorVictimVectorized(frame, showFrame=False)
+        if victim == None:
+            victim =  getLetter(frame, showFrame=False, frameCounting=False, frameCount=frameCount)
+        
+        if victim!=None:
+            #ser.write((commandsMsg).encode())
+            #print("Sent: " + commandsMsg)
+            print("Saw:", victim, "at frame -", frameCount)
+            cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
+            #continue 
+        else:
             print("Saw Nothing! -", frameCount)
         
         frameCount+=1
 
-        letterBuffer.append(letter)
+        letterBuffer.append(victim)
         letterBuffer.pop(0)
         cv2.waitKey(1)
         #if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
         if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1]):
             print("Set Interrupt Pin to High!")
             GPIO.output(COMPORT, GPIO.HIGH)
-            print("Sent Letter to Arduino:", letter)
-            ser.write((letter + " LETTER\n").encode())
+            print("Sent Victim to Arduino:", victim)
+            ser.write((victim + " VICTIM\n").encode())
             ser.flush()
             time.sleep(0.15)
             '''done = False
