@@ -8,7 +8,7 @@ GPIO.output(COMPORT, GPIO.LOW)
 
 for i in range(10):
     GPIO.output(COMPORT, GPIO.HIGH)
-    time.sleep(1)
+    time.sleep(0.01)
     GPIO.output(COMPORT, GPIO.LOW)
-    time.sleep(1)
+    time.sleep(0.01)
     

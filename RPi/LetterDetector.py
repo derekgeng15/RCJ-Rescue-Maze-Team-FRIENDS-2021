@@ -59,7 +59,8 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
 
     #Cutting to get rid of treads and stuff
     #Current Cuts are for sideways-angled camera
-    thresh[:, 0:25] = 255
+    thresh[:, 0:70] = 255
+    thresh[height-55:height, :] = 255
     #thresh[:, width-70:width] = 255
     if showFrame:
         cv2.imshow("thresh", thresh)
@@ -83,13 +84,13 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>100 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>500 and cv2.contourArea(c) < 10000):
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
             cropped = thresh[y:y+h, x:x+w]
-            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+            if 1.6*h < w or 1.6*w < h: # If image dimensions are unreasonable
                 continue
             #cv2.imwrite("RPi/HSU Stuff/H-cropped " + str(i) + " .jpg", cropped)
             

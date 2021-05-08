@@ -27,10 +27,11 @@ GPIO.setup(COMPORT, GPIO.OUT)
 GPIO.output(COMPORT, GPIO.LOW)
 
 # Camera Stuff
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 cap.set(cv2.CAP_PROP_FPS,30)
+#cap.set(cv2.CAP_PROP_BUFFERSIZE, 10) # Buffer Size
 frameCount = 0
 
 # Warming Up the camera
@@ -40,7 +41,7 @@ time.sleep(1)
 frame_size = (320, 240)  #Width, Height
 #result = cv2.VideoWriter('imgs/cam.mp4', cv2.VideoWriter_fourcc(*'MLPG'), 10, frame_size)
 
-AI = Nav(readInWall=False)
+AI = Nav(readInWall=True)
 
 int_encode = b'2'
 float_encode = b'42.3'
@@ -67,9 +68,9 @@ while True:
             while(ser.in_waiting == 0): #if there's something in the buffer
                 pass
             print("Size: " + str( ser.in_waiting))
-            x = ser.read_until("\n")
+            x = ser.read_until('\n')
             msg = x.decode('ascii')
-            print("Got:", msg, end="\n")
+            print("Got:", msg, end='\n')
             for i in range(4):
                 if(msg[i]=="1"):
                     AI.markWall((i + AI.direction) % 4)
@@ -137,7 +138,7 @@ while True:
 
     # Victim Deteciton Loop
     letterBuffer = [None,None]
-    while(cap.isOpened() and ser.in_waiting == 0):
+    while(ser.in_waiting == 0): #cap.isOpened() and 
         # Capture frame-by-frame
         ret, frame = cap.read()
         # Display the resulting frame
@@ -151,7 +152,8 @@ while True:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
             print("Saw:", letter, "at frame -", frameCount)
-            #continue
+            cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
+            #continue 
         else:
             print("Saw Nothing! -", frameCount)
         
@@ -159,16 +161,16 @@ while True:
 
         letterBuffer.append(letter)
         letterBuffer.pop(0)
+        cv2.waitKey(1)
         #if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
         if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1]):
             print("Set Interrupt Pin to High!")
             GPIO.output(COMPORT, GPIO.HIGH)
             print("Sent Letter to Arduino:", letter)
-            ser.write((letter).encode())
-            '''
+            ser.write((letter + " LETTER\n").encode())
             ser.flush()
-
-            done = False
+            time.sleep(0.15)
+            '''done = False
             while not done:
                 try:
                     while(ser.in_waiting > 0): #if there's something in the buffer
@@ -181,9 +183,8 @@ while True:
                 except IOError as e:
                     print ("Something Bad Happened!")
                     print(e)
-                time.sleep(0.05)
-            '''
-            time.sleep(0.5)
+                time.sleep(0                                                                        .05)'''
+
             GPIO.output(COMPORT, GPIO.LOW)
             print("Set Interrupt Pin back to Low!")
             break

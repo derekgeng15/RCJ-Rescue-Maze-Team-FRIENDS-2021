@@ -37,6 +37,13 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     redFiltered = np.bitwise_and(thresh, redFilter)
     cv2.imshow('redFiltered', redFiltered)
 
+    # Filtering for Green
+    greenFilter = np.zeros((height, width), dtype="uint8")
+    greenFilterBool = greenChannel * 0.5 > redChannel
+    greenFilter[greenFilterBool == True] = 255
+    greenFiltered = np.bitwise_and(thresh, greenFilter)
+    cv2.imshow('greenFiltered', greenFiltered)
+
     # Area Filter Contours
     redAreaFiltered = areaFilter(redFiltered)
 

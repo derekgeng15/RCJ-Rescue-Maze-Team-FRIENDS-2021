@@ -2,16 +2,21 @@ import numpy as np
 import cv2
 from LetterDetector import *
 
-cap = cv2.VideoCapture(1)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+cap = cv2.VideoCapture(0) # Right
+cap1 = cv2.VideoCapture(1) # Left
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 320
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # 240
 cap.set(cv2.CAP_PROP_FPS,30)
+#cap.set(cv2.CAP_PROP_BUFFERSIZE, 2)
+time.sleep(2)
 
 while(cap.isOpened()):
     # Capture frame-by-frame
     ret, frame = cap.read()
+    ret2, frame2 = cap1.read()
     # Display the resulting frame
-    cv2.imshow('Camera1',frame)
+    cv2.imshow('VideoCapture0',frame)
+    cv2.imshow('Capture1',frame2)
     print(getLetter(frame))
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
