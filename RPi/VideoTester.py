@@ -4,7 +4,7 @@ from LetterDetector import *
 from ColorDetector import *
 
 cap = cv2.VideoCapture(0) # Right
-cap1 = cv2.VideoCapture(1) # Left
+#cap1 = cv2.VideoCapture(1) # Left
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 320
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # 240
 cap.set(cv2.CAP_PROP_FPS,30)
@@ -14,10 +14,10 @@ time.sleep(2)
 while(cap.isOpened()):
     # Capture frame-by-frame
     ret, frame = cap.read()
-    ret2, frame2 = cap1.read()
+    #ret2, frame2 = cap1.read()
     # Display the resulting frame
-    #cv2.imshow('VideoCapture0',frame)
-    cv2.imshow('Capture1',frame2)
+    cv2.imshow('VideoCapture0',frame)
+    #cv2.imshow('Capture1',frame2)
 
     color = getColorVictimVectorized(frame, showFrame=True)
     if color == None:

@@ -54,8 +54,11 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
 def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     (height, width, depth) = img.shape
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)[1]
+    #gray = cv2.GaussianBlur(gray, (9, 9), 6)
+    gray = cv2.bilateralFilter(gray, 5, 15, 15)
+    #thresh = cv2.threshold(gray, 70, 255, cv2.THRESH_BINARY)[1]
+    method = {"mean": cv2.ADAPTIVE_THRESH_MEAN_C, "gaus": cv2.ADAPTIVE_THRESH_GAUSSIAN_C}
+    thresh = cv2.adaptiveThreshold(gray, 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
 
     #Cutting to get rid of treads and stuff
     #Current Cuts are for sideways-angled camera
@@ -84,7 +87,7 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>1500 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>1000 and cv2.contourArea(c) < 10000):
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)

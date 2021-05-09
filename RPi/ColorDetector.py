@@ -26,18 +26,53 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     blueChannel = img[:,:,0]
     greenChannel = img[:,:,1]
     redChannel = img[:,:,2]
+    lowerBound = np.array([30, 30, 30])
+    upperBound = np.array([255, 255, 255])
 
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)[1]
+    #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #thresh = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.inRange(img, lowerBound, upperBound)
     if showFrame:
         cv2.imshow("thresh", thresh)
 
     # Don't detect black letters
-    #thresh[blueChannel < 35 and greenChannel < 35 and redChannel < 35] = 0
+    #thresh[np.logical_and(np.logical_and(blueChannel < 35, greenChannel < 35), redChannel < 35)] = 0
 
     #thresh += 20
-    #print(img[height//2][width//2])
+    print(img[height//2][width//2])
     areaFilterMin = 1000
+
+    # Filtering for Yellow
+    yellowFilter = np.zeros((height, width), dtype="uint8")
+    yellowFilterBool = np.logical_and(np.logical_and((greenChannel * 0.7 > blueChannel), (redChannel * 7 > blueChannel)), (np.absolute(greenChannel.astype(int)-redChannel.astype(int)) < 20)) # Make sure both Red and Green are much larger than blue as well as red and gren not too far from each other
+    #print("Abs diff:", int(greenChannel[height//2][width//2]) - int(redChannel[height//2][width//2]))
+    #yellowFilterBool = np.logical_and((greenChannel * 0.55 > blueChannel), (redChannel * 0.55 > blueChannel))
+    yellowFilter[yellowFilterBool == True] = 255
+    yellowFiltered = np.bitwise_and(thresh, yellowFilter)
+    if showFrame:
+        cv2.imshow('yellowFiltered', yellowFiltered)
+
+    # Area Filter Contours
+    yellowAreaFiltered = areaFilter(yellowFiltered)
+
+    # Contour Detection
+    contours, h = cv2.findContours(yellowAreaFiltered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
+    foundYellowVictim = False
+    for i, c in enumerate(contours):
+        if(cv2.contourArea(c)>areaFilterMin):
+            #GETTING BOUNDING RECTANGLE
+            rect = cv2.boundingRect(c)
+            x,y,w,h = rect
+            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+                continue
+            else:
+                foundYellowVictim = True
+            if showFrame:
+                cv2.imshow("ROI", img[y:y+h, x:x+w])
+    
+    # Victim Detection Logic
+    if foundYellowVictim:
+        return "Yellow"
 
     # Filtering for Red
     redFilter = np.zeros((height, width), dtype="uint8")
