@@ -245,8 +245,9 @@ while True:
                 time.sleep(0                                                                        .05)'''
 
             GPIO.output(COMPORT, GPIO.LOW)
+            time.sleep(0.5)
             print("Set Interrupt Pin back to Low!")
-            break
+            #break
 
         elif letterBufferR[0] != None and (letterBufferR[0]==letterBufferR[1]):
             print("Set Interrupt Pin to High!")
@@ -256,8 +257,9 @@ while True:
             ser.flush()
             time.sleep(0.15)
             GPIO.output(COMPORT, GPIO.LOW)
+            time.sleep(0.5)
             print("Set Interrupt Pin back to Low!")
-            break
+            #break
 
 capL.release()
 capR.release()

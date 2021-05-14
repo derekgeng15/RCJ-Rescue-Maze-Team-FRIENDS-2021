@@ -19,7 +19,10 @@ from LetterDetector import *
     
     return img'''
 
+# Using in range
+
 def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
+    return None
     (height, width, depth) = img.shape # BGR Image
     #print("img Shape:", img.shape)
 
@@ -37,12 +40,18 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     yellowThresh = cv2.inRange(hsv, yellowLowerBound, yellowUpperBound)
     greenThresh = cv2.inRange(hsv, greenLowerBound, greenUpperBound)
     
+    #print("I\'m CUTTING")
+    redThresh = cuts(redThresh, height, width)
+    yellowThresh = cuts(yellowThresh, height, width)
+    greenThresh = cuts(greenThresh, height, width)
+    
     if showFrame:
         cv2.imshow("redThresh", redThresh)
         cv2.imshow("yellowThresh", yellowThresh)
         cv2.imshow("greenThresh", greenThresh)
 
-    areaFilterMin = 500
+    areaFilterMin = 700
+    hwRatio = 1.25
 
     # Contour Detection
     contours, h = cv2.findContours(yellowThresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
@@ -52,7 +61,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.5*h < w or 1.5*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundYellowVictim = True
@@ -71,7 +80,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundRedVictim = True
@@ -90,7 +99,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundGreenVictim = True
@@ -102,10 +111,11 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
         return "GREEN"
     
     return None
-    
-    #cv2.waitKey()
 
-'''def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
+    #cv2.waitKey()
+'''
+def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
+    #return None
     (height, width, depth) = img.shape # BGR Image
     #print("img Shape:", img.shape)
 
@@ -224,8 +234,8 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     
     return None
     
-    #cv2.waitKey()'''
-
+    #cv2.waitKey()
+'''
 # --------------------------------------------------------------
 
 def getColorVictim(img, showFrame=True, frameCounting=False, frameCount=1):

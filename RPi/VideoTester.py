@@ -3,7 +3,7 @@ import cv2
 from LetterDetector import *
 from ColorDetector import *
 
-cap = cv2.VideoCapture(0) # Right
+cap = cv2.VideoCapture(1) # Right
 #cap1 = cv2.VideoCapture(1) # Left
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 320
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # 240

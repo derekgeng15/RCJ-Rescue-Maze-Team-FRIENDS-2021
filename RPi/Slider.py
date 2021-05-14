@@ -5,17 +5,17 @@ import numpy as np
 def nothing(x):
     pass
 
-# Load in image
-#image = cv2.imread("imgs/Camera1 Left - 14.png")
-#image = cv2.imread("imgs/Camera1 Right Cam - 15.png")
-
 cap = cv2.VideoCapture(0) # Right
 #cap1 = cv2.VideoCapture(1) # Left
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 320
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # 240
 cap.set(cv2.CAP_PROP_FPS,30)
 
-ret, image = cap.read()
+# Load in image
+image = cv2.imread("imgs/Camera1 Left - 16.png")
+#image = cv2.imread("imgs/Camera1 Right Cam - 15.png")
+
+#ret, image = cap.read()
 
 # Create a window
 cv2.namedWindow('image')
@@ -77,4 +77,5 @@ while(1):
     if cv2.waitKey(wait_time) & 0xFF == ord('q'):
         break
 
+cap.release()
 cv2.destroyAllWindows()

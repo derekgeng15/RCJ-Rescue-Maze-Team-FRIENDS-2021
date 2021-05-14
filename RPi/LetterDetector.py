@@ -49,6 +49,15 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
     M = cv2.getRotationMatrix2D(center, angle, scale)
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
+def cuts(img, height, width, value = 0):
+    LRCUT = 45
+    TBCUT = 23
+    img[:, 0:LRCUT] = value
+    img[:, width-LRCUT:width] = value
+    img[0:TBCUT, :] = value
+    img[height-TBCUT:height, :] = value
+    return img
+
 #------------------------------------------------------------------------------------------------------
 
 
@@ -144,6 +153,7 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
 height = 0
 width = 0
 depth = 0
+hwRatio = 1.45
 
 def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     global height, width, depth
@@ -153,8 +163,10 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
     thresh = cv2.threshold(blurred, 70, 255, cv2.THRESH_BINARY)[1]
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
-
-    blurred = cv2.bilateralFilter(gray, 5, 15, 15)
+    
+    return gbr
+    
+    '''blurred = cv2.bilateralFilter(gray, 5, 15, 15)
     method = {"mean": cv2.ADAPTIVE_THRESH_MEAN_C, "gaus": cv2.ADAPTIVE_THRESH_GAUSSIAN_C}
     thresh = cv2.adaptiveThreshold(gray, 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
     bfr = processLetter(thresh, showFrame, frameCounting, frameCount)
@@ -162,15 +174,18 @@ def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we wa
     if bfr==gbr:
         return bfr
     else:
-        return None
+        return None'''
 
 def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     #Cutting to get rid of treads and stuff
     #Current Cuts are for sideways-angled camera
     #thresh[:, 0:70] = 255
     #thresh[height-55:height, :] = 255
+    '''
     thresh[:, width-50:width] = 255
     thresh[:, 0:50] = 255
+    '''
+    thresh = cuts(thresh, height, width, 255)
     if showFrame:
         cv2.imshow("thresh", thresh)
     if frameCounting:
@@ -199,7 +214,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
             cropped = thresh[y:y+h, x:x+w]
-            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             #cv2.imwrite("RPi/HSU Stuff/H-cropped " + str(i) + " .jpg", cropped)
             
