@@ -19,6 +19,21 @@ def clearFile():
 
 clearFile()
 
+def convertVictimToKits(victim):
+    if victim=="H":
+        return "3"
+    if victim=="S":
+        return "2"
+    if victim=="U":
+        return "0"
+    if victim=="RED":
+        return "1"
+    if victim=="YELLOW":
+        return "1"
+    if victim=="GREEN":
+        return "0"
+    return "0"
+
 # GPIO Stuff
 # Port 4 on StereoPi
 # Port 22 on MegaPi
@@ -28,15 +43,20 @@ GPIO.setup(COMPORT, GPIO.OUT)
 GPIO.output(COMPORT, GPIO.LOW)
 
 # Camera Stuff
-cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
-cap.set(cv2.CAP_PROP_FPS,30)
+capL = cv2.VideoCapture(1) # Left
+capR = cv2.VideoCapture(0) # Right
+capL.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+capL.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+capL.set(cv2.CAP_PROP_FPS,30)
 #cap.set(cv2.CAP_PROP_BUFFERSIZE, 10) # Buffer Size
+capR.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+capR.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+capR.set(cv2.CAP_PROP_FPS,30)
 frameCount = 0
 
 # Warming Up the camera
-ret, frame = cap.read()
+ret, frameL = capL.read()
+ret, frameR = capR.read()
 time.sleep(1)
 
 frame_size = (320, 240)  #Width, Height
@@ -64,6 +84,7 @@ while True:
     #Waiting for Arduino to give Wall Data for current tile
     done = False
     print("Waiting...")
+    msg = ""
     while not done:
         try:
             while(ser.in_waiting == 0): #if there's something in the buffer
@@ -84,6 +105,9 @@ while True:
     ser.flush()
     ser.write("Confirm\n".encode())
     print("Responded to Arduino Confirm!")
+    if len(msg) >= 4 and msg[0:4]=="1111":
+        print("Blackout!")
+        AI.blackout()
 
     # Waiting for Arduino to request Commands
     done = False
@@ -138,10 +162,12 @@ while True:
         time.sleep(0.05)
 
     # Victim Deteciton Loop
-    letterBuffer = [None,None]
+    letterBufferL = [None,None]
+    letterBufferR = [None,None]
     while(ser.in_waiting == 0): #cap.isOpened() and 
         # Capture frame-by-frame
-        ret, frame = cap.read()
+        ret, frameL = capL.read()
+        ret, frameR = capR.read() 
         # Display the resulting frame
         #cv2.imshow('Camera1',frame)
         #cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
@@ -158,30 +184,49 @@ while True:
         else:
             print("Saw Nothing! -", frameCount)'''
 
-        victim = getColorVictimVectorized(frame, showFrame=False)
-        if victim == None:
-            victim =  getLetter(frame, showFrame=False, frameCounting=False, frameCount=frameCount)
+        if frameCount < 4:
+            frameCount += 1
+            continue
+
+        victimL = getColorVictimVectorized(frameL, showFrame=False)
+        if victimL == None:
+            victimL =  getLetter(frameL, showFrame=False, frameCounting=False, frameCount=frameCount)
         
-        if victim!=None:
+        if victimL!=None:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
-            print("Saw:", victim, "at frame -", frameCount)
-            cv2.imwrite("imgs/Camera1 - " + str(frameCount) + ".png", frame)
+            print("Saw Left Cam:", victimL, "at frame -", frameCount)
+            cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
             #continue 
         else:
-            print("Saw Nothing! -", frameCount)
+            print("Saw Nothing Left Cam! -", frameCount)
+
+        victimR = getColorVictimVectorized(frameR, showFrame=False)
+        if victimR == None:
+            victimR =  getLetter(frameR, showFrame=False, frameCounting=False, frameCount=frameCount)
+        
+        if victimR!=None:
+            #ser.write((commandsMsg).encode())
+            #print("Sent: " + commandsMsg)
+            print("Saw Right Cam:", victimR, "at frame -", frameCount)
+            cv2.imwrite("imgs/Camera1 Right Cam - " + str(frameCount) + ".png", frameR)
+            #continue 
+        else:
+            print("Saw Nothing Right Cam! -", frameCount)
         
         frameCount+=1
 
-        letterBuffer.append(victim)
-        letterBuffer.pop(0)
+        letterBufferL.append(victimL)
+        letterBufferL.pop(0)
+        letterBufferR.append(victimR)
+        letterBufferR.pop(0)
         cv2.waitKey(1)
         #if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
-        if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1]):
+        if letterBufferL[0] != None and (letterBufferL[0]==letterBufferL[1]):
             print("Set Interrupt Pin to High!")
             GPIO.output(COMPORT, GPIO.HIGH)
-            print("Sent Victim to Arduino:", victim)
-            ser.write((victim + " VICTIM\n").encode())
+            print("Sent Left Cam Victim to Arduino:", victimL)
+            ser.write((convertVictimToKits(victimL) + "L VICTIM - " + str(frameCount) +"\n").encode())
             ser.flush()
             time.sleep(0.15)
             '''done = False
@@ -203,5 +248,16 @@ while True:
             print("Set Interrupt Pin back to Low!")
             break
 
-result.release()
-cap.release()
+        elif letterBufferR[0] != None and (letterBufferR[0]==letterBufferR[1]):
+            print("Set Interrupt Pin to High!")
+            GPIO.output(COMPORT, GPIO.HIGH)
+            print("Sent Right Cam Victim to Arduino:", victimR)
+            ser.write((convertVictimToKits(victimR) + "R VICTIM - " + str(frameCount) + "\n").encode())
+            ser.flush()
+            time.sleep(0.15)
+            GPIO.output(COMPORT, GPIO.LOW)
+            print("Set Interrupt Pin back to Low!")
+            break
+
+capL.release()
+capR.release()

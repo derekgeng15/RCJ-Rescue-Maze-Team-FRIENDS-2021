@@ -19,6 +19,8 @@ while(cap.isOpened()):
     cv2.imshow('VideoCapture0',frame)
     #cv2.imshow('Capture1',frame2)
 
+    #print(getLetter(frame, showFrame=True))
+
     color = getColorVictimVectorized(frame, showFrame=True)
     if color == None:
         print(getLetter(frame))

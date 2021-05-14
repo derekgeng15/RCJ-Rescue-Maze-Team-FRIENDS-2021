@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from LetterDetector import *
+from ColorDetector import *
 
  
 #frame = cv2.imread("img-tests/H-sideways-small.jpg")
@@ -9,11 +10,13 @@ from LetterDetector import *
 #frame = cv2.imread("img-tests/Nothing-test2.png")
 #frame = cv2.imread("img-tests/Nothing-test3.png")
 #frame = cv2.imread("Camera1 - 5.png")
-frame = cv2.imread("H-sideways-small.jpg")
-#frame = cv2.imread("imgs/Camera1 - 133.png")
+#frame = cv2.imread("H-sideways-small.jpg")
+#frame = cv2.imread("imgs/Camera1 Left - 14.png")
+frame = cv2.imread("imgs/Camera1 Right Cam - 15.png")
 cv2.imshow("frame", frame)
 
-print("Got:", getLetter(frame))
+#print("Got:", getLetter(frame))
+print("Got:", getColorVictimVectorized(frame))
 
 cv2.waitKey()
 cv2.destroyAllWindows()
