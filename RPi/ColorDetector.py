@@ -23,6 +23,92 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     (height, width, depth) = img.shape # BGR Image
     #print("img Shape:", img.shape)
 
+    redLowerBound = np.array([0, 108, 0])
+    redUpperBound = np.array([21, 255, 255])
+
+    yellowLowerBound = np.array([0, 118, 108])
+    yellowUpperBound = np.array([179, 255, 255])
+
+    greenLowerBound = np.array([35, 43, 0])
+    greenUpperBound = np.array([179, 255, 255])
+
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    redThresh = cv2.inRange(hsv, redLowerBound, redUpperBound)
+    yellowThresh = cv2.inRange(hsv, yellowLowerBound, yellowUpperBound)
+    greenThresh = cv2.inRange(hsv, greenLowerBound, greenUpperBound)
+    
+    if showFrame:
+        cv2.imshow("redThresh", redThresh)
+        cv2.imshow("yellowThresh", yellowThresh)
+        cv2.imshow("greenThresh", greenThresh)
+
+    areaFilterMin = 500
+
+    # Contour Detection
+    contours, h = cv2.findContours(yellowThresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
+    foundYellowVictim = False
+    for i, c in enumerate(contours):
+        if(cv2.contourArea(c)>areaFilterMin):
+            #GETTING BOUNDING RECTANGLE
+            rect = cv2.boundingRect(c)
+            x,y,w,h = rect
+            if 1.5*h < w or 1.5*w < h: # If image dimensions are unreasonable
+                continue
+            else:
+                foundYellowVictim = True
+            if showFrame:
+                cv2.imshow("ROI", img[y:y+h, x:x+w])
+    
+    # Victim Detection Logic
+    if foundYellowVictim:
+        return "Yellow"
+
+    # Contour Detection
+    contours, h = cv2.findContours(redThresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
+    foundRedVictim = False
+    for i, c in enumerate(contours):
+        if(cv2.contourArea(c)>areaFilterMin):
+            #GETTING BOUNDING RECTANGLE
+            rect = cv2.boundingRect(c)
+            x,y,w,h = rect
+            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+                continue
+            else:
+                foundRedVictim = True
+            if showFrame:
+                cv2.imshow("ROI", img[y:y+h, x:x+w])
+    
+    # Victim Detection Logic
+    if foundRedVictim:
+        return "RED"
+
+    # Contour Detection
+    contours, h = cv2.findContours(greenThresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
+    foundGreenVictim = False
+    for i, c in enumerate(contours):
+        if(cv2.contourArea(c)>areaFilterMin):
+            #GETTING BOUNDING RECTANGLE
+            rect = cv2.boundingRect(c)
+            x,y,w,h = rect
+            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+                continue
+            else:
+                foundGreenVictim = True
+            if showFrame:
+                cv2.imshow("ROI", img[y:y+h, x:x+w])
+    
+    # Victim Detection Logic
+    if foundGreenVictim:
+        return "GREEN"
+    
+    return None
+    
+    #cv2.waitKey()
+
+'''def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
+    (height, width, depth) = img.shape # BGR Image
+    #print("img Shape:", img.shape)
+
     blueChannel = img[:,:,0]
     greenChannel = img[:,:,1]
     redChannel = img[:,:,2]
@@ -138,7 +224,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     
     return None
     
-    #cv2.waitKey()
+    #cv2.waitKey()'''
 
 # --------------------------------------------------------------
 
