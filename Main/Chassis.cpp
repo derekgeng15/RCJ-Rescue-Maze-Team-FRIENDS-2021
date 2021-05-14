@@ -60,7 +60,6 @@ bool Chassis::turnTo(double deg){
     error = 360 - error;
   else if(error < -180)
     error += 360;
-  Serial.println(error);
   if(abs(error) < 90) 
    totalErr+=error;
   
@@ -93,7 +92,7 @@ bool Chassis::turnTo(double deg){
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 1.0;
+  static double kP = 0.75;
   static double kD = 0;
   double kI = 0.00;
   double speed;

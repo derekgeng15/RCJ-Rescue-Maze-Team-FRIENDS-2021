@@ -40,9 +40,7 @@ extern int step, skip;
 extern volatile bool victim;
 
 const int sPin = 3;
-
-extern int victimCt;
-
+extern bool prev_victim;
 
 
 void lMotorEncInterrupt();

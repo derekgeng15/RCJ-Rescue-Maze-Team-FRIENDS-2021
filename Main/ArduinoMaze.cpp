@@ -28,7 +28,6 @@ void rMotorEncInterrupt()
   _chassis->updREnc();
 }
 void vSerialInterrupt(){
-  digitalWrite(9, HIGH);
   victim = true;
 }
 DIRECTION getDir(char c){
@@ -124,37 +123,37 @@ void readTile(){//read Tile data and send to PI
 }
 
 void getPath(){//get BFS path from PI
+  checkVictim();
   path = _comm->readIn();
   step = 0;
 }
 
 void checkVictim() {
   String letter;
-//  if(therm2.read()) {
-//        Serial.print("Temp 2: ");
-//        Serial.println(String(therm2.object(), 2));
-//      }
-//   else {
-//       Serial.println("Failed therm 2");
-//  }
   if(victim) {
-        _chassis->runMotors(0);
+        
         Serial.println("\nRECIEVED SOMETHING\n");
         letter = _comm->readSerial();
         _laser->readAll();
-        _laser->print();
-        if(path.length()<=1 && !prev_victim) {
+//        _laser->print();
+        if(step == path.length()- 1 && !prev_victim) {
           _chassis->resetR();
-          prev_victim = true;
-          Serial.println("Stopping motors");
-          Serial.print("SAW LETTER: ");
-          Serial.println(letter);
           if((_laser->getDist(3)<200 && letter[1] == 'R')) {
+            _chassis->runMotors(0);
+            Serial.println("Stopping motors");
+            Serial.print("SAW LETTER: ");
+            Serial.println(letter);
+            prev_victim = true;
             digitalWrite(9, HIGH);
             delay(2000);
             digitalWrite(9, LOW);
           }
           if((_laser->getDist(2)<200 && letter[1] == 'L')) {
+            _chassis->runMotors(0);
+            Serial.println("Stopping motors");
+            Serial.print("SAW LETTER: ");
+            Serial.println(letter);
+            prev_victim = true;
             digitalWrite(9, HIGH);
             delay(2000);
             digitalWrite(9, LOW);
@@ -181,8 +180,8 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::TURNING:{
       if(therm1.read()) {
-        Serial.print(" Temp 1: ");
-        Serial.println(String(therm1.object(), 2));
+//        Serial.print(" Temp 1: ");
+//        Serial.println(String(therm1.object(), 2));
         if(therm1.object()>78 && !prev_victim) {
           _chassis->resetR();
           victim = true;
@@ -217,8 +216,6 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::FORWARD:{
-      
-      
       _chassis->updateEnc();
 //      if(therm2.read()) {
 //        Serial.print(" Temp 2: ");
