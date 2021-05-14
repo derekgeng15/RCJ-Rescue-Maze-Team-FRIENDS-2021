@@ -24,10 +24,10 @@ void loop()
   
   readSensors();
   checkVictim();
+  prevFunc();
   switch(state){
     case STATE::READING:{
       readSensors();
-   
       readTile();
       _comm->writeOut("Gib command");
       getPath();
@@ -41,8 +41,8 @@ void loop()
       break;
     }
   }
-  //_laser->read();
-  //print();
-  //_chassis->turnTo(-90);
+//  _laser->read();
+//  print();
+//  _chassis->turnTo(-90);
   
 }

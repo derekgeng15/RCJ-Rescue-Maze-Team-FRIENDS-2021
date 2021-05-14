@@ -98,7 +98,7 @@ bool Chassis::goMm(double mm){
   double kI = 0.00;
   double speed;
   lTotalErr+=(encPerMm * mm - lEncCt);
-  rTotalErr+=(encPerMm * mm - rEncCt);
+  //rTotalErr+=(encPerMm * mm - rEncCt);
   if(abs(lEncCt - (encPerMm * mm))>9){
     if((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI))<0) {
       speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -35);
@@ -128,10 +128,14 @@ bool Chassis::goMm(double mm){
 }
 void Chassis::reset(){
   _lEnc.reset();
-  _rEnc.reset();
   lEncCt = 0;
+}
+
+void Chassis::resetR() {
+  _rEnc.reset();
   rEncCt = 0;
 }
+
 void Chassis::updateEnc() {
   plEncCt = lEncCt;
   prEncCt = rEncCt;

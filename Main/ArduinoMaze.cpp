@@ -15,6 +15,9 @@ String path;
 int step, skip;
 int light;
 
+bool prev_victim = false;
+
+
 volatile bool victim = false;
 void lMotorEncInterrupt()
 {
@@ -25,6 +28,7 @@ void rMotorEncInterrupt()
   _chassis->updREnc();
 }
 void vSerialInterrupt(){
+  digitalWrite(9, HIGH);
   victim = true;
 }
 DIRECTION getDir(char c){
@@ -39,6 +43,14 @@ DIRECTION getDir(char c){
       return LEFT;
   }
 }
+
+void prevFunc() {
+  if(prev_victim && _chassis->getrEncCt()>encPerMm*100) {
+    Serial.println("PREV RESETTING");
+    prev_victim = false;
+  }
+}
+
 void begin(){
   _chassis = new Chassis();
   _laser = new LaserSystem();
@@ -63,11 +75,11 @@ void begin(){
   therm1.setUnit(TEMP_F);
 //  therm2.setUnit(TEMP_F);
   Serial.println("Finished therms");
-  pinMode(sPin, INPUT);
+  pinMode(sPin, INPUT_PULLUP);
   pinMode(9, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
-  attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, RISING);
+  attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, FALLING);
   delay(2000);
 }
 void readSensors(){//read all sensors
@@ -118,26 +130,35 @@ void getPath(){//get BFS path from PI
 
 void checkVictim() {
   String letter;
-  if(therm1.read()) {
-        Serial.print("Temp 1: ");
-        Serial.print(String(therm1.object(), 2));
-      }
-   else {
-       Serial.println("Failed therm 1");
-  }
+//  if(therm2.read()) {
+//        Serial.print("Temp 2: ");
+//        Serial.println(String(therm2.object(), 2));
+//      }
+//   else {
+//       Serial.println("Failed therm 2");
+//  }
   if(victim) {
         _chassis->runMotors(0);
         Serial.println("\nRECIEVED SOMETHING\n");
         letter = _comm->readSerial();
         _laser->readAll();
         _laser->print();
-        if(_laser->getDist(3)<200 && path.length()<=1) {
+        if(path.length()<=1 && !prev_victim) {
+          _chassis->resetR();
+          prev_victim = true;
           Serial.println("Stopping motors");
           Serial.print("SAW LETTER: ");
           Serial.println(letter);
-          digitalWrite(9, HIGH);
-          delay(2000);
-          digitalWrite(9, LOW);
+          if((_laser->getDist(3)<200 && letter[1] == 'R')) {
+            digitalWrite(9, HIGH);
+            delay(2000);
+            digitalWrite(9, LOW);
+          }
+          if((_laser->getDist(2)<200 && letter[1] == 'L')) {
+            digitalWrite(9, HIGH);
+            delay(2000);
+            digitalWrite(9, LOW);
+          }
         }
         victim = false;
       }
@@ -159,11 +180,20 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::TURNING:{
+      if(therm1.read()) {
+        Serial.print(" Temp 1: ");
+        Serial.println(String(therm1.object(), 2));
+        if(therm1.object()>78 && !prev_victim) {
+          _chassis->resetR();
+          victim = true;
+          prev_victim = true;
+        }
+      }
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
         currDir = (currDir + getDir(path[step]))%4;
         _laser->readAll();
         angAdj = 0;
-        double fe = TILE_SIZE + 50;
+        double fe = TILE_SIZE + 40;
         if(min(_laser->getDist(0), _laser->getDist(1)) < 450)
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE) + (TILE_SIZE)/2 + 120;
         if(_laser->getDist(2) < TILE_SIZE)
@@ -197,6 +227,18 @@ bool followPath(){//TODO: Add state machine for following
 //      else {
 //        Serial.println("Failed therm");
 //      }
+      if(therm1.read()) {
+        //Serial.print(" Temp 1: ");
+        //Serial.println(String(therm1.object(), 2));
+        if(therm1.object()>80 && !prev_victim) {
+          _chassis->resetR();
+          victim = true;
+          prev_victim = true;
+        }
+      }
+      else {
+       Serial.println("Failed therm 1");
+      }
       if(_chassis->goMm(forward)){
         fstate = FORADJ;
       }

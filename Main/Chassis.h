@@ -41,6 +41,6 @@ class Chassis{
     void print();
     void updateEnc();
     void runMotors(double power);
-    
+    void resetR();
   
 };

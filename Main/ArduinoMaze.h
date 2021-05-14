@@ -41,6 +41,8 @@ extern volatile bool victim;
 
 const int sPin = 3;
 
+extern int victimCt;
+
 
 
 void lMotorEncInterrupt();
@@ -55,3 +57,4 @@ void readTile();
 void getPath();
 bool followPath();
 void checkVictim();
+void prevFunc();
