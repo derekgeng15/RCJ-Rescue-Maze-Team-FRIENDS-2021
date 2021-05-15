@@ -131,9 +131,13 @@ void getPath(){//get BFS path from PI
 void checkVictim() {
   String letter;
   if(victim) {
-        
+        _chassis->runMotors(0);
         Serial.println("\nRECIEVED SOMETHING\n");
         letter = _comm->readSerial();
+        if(letter[0] == 't'){
+          victim = false;
+          return;
+         }
         _laser->readAll();
 //        _laser->print();
         if(step == path.length()- 1 && !prev_victim) {

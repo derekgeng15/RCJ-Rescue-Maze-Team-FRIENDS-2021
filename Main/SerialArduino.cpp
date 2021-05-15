@@ -21,7 +21,14 @@
 
 String SA::readSerial(){
   Serial.println("Waiting for message");
-  while(!Serial2.available());
+  auto start = millis();
+  while(!Serial2.available()){
+    Serial.println(millis() - start);
+    if(millis() - start >= 1000){
+      Serial.println("Serial timeout");
+      return "timeout";
+    }
+  }
   buff = Serial2.readStringUntil('\n');
   Serial.println("Recieved: " + buff);
   return buff;
