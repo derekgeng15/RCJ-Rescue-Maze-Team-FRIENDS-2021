@@ -3,13 +3,15 @@ import cv2
 from LetterDetector import *
 from ColorDetector import *
 
-cap = cv2.VideoCapture(1) # Right
-#cap1 = cv2.VideoCapture(1) # Left
+cap = cv2.VideoCapture(0) # Right - 0 | MAKE SURE THE VICTIM DETECTION FUNCTIONS REFLECT THE DIRECTION
+#cap = cv2.VideoCapture(1) # Left - 1
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 320
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # 240
 cap.set(cv2.CAP_PROP_FPS,30)
 #cap.set(cv2.CAP_PROP_BUFFERSIZE, 2)
-time.sleep(2)
+time.sleep(1)
+
+frameCount = 0
 
 while(cap.isOpened()):
     # Capture frame-by-frame
@@ -18,12 +20,14 @@ while(cap.isOpened()):
     # Display the resulting frame
     cv2.imshow('VideoCapture0',frame)
     #cv2.imshow('Capture1',frame2)
-
+    if frameCount < 5:
+        frameCount += 1
+        continue
     #print(getLetter(frame, showFrame=True))
 
-    color = getColorVictimVectorized(frame, showFrame=True)
+    color = getColorVictimVectorized(frame, direction="right", showFrame=True)
     if color == None:
-        print(getLetter(frame))
+        print(getLetter(frame, direction="right"))
     else:
         print(color)
 

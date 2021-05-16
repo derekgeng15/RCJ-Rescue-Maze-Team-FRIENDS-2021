@@ -248,12 +248,13 @@ class Nav:
             commands, newLocation, newDirection = self.backtrackBFS()
 
         if len(commands) == 0: # Visited all possible tiles
-            print("!!!GOING BACK HOME!!!")
             commands, newLocation, newDirection = self.backtrackHomeBFS() # Then backtrack home
             if len(commands)==0:
                 print("Already at home. Finishing program!")
                 #Send Signal
                 return []
+            else:
+                print("!!!GOING BACK HOME!!!")
 
         self.direction = newDirection  # Update Direction
         self.previousLocation = self.location  # Update previous location

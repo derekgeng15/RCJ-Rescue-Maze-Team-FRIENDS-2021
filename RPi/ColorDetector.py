@@ -20,7 +20,7 @@ from LetterDetector import *
     return img'''
 
 # Using in range
-
+'''
 def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
     return None
     (height, width, depth) = img.shape # BGR Image
@@ -114,7 +114,9 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
 
     #cv2.waitKey()
 '''
-def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCount=1):
+
+# Using BGR Numpy filtering
+def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounting=False, frameCount=1):
     #return None
     (height, width, depth) = img.shape # BGR Image
     #print("img Shape:", img.shape)
@@ -126,22 +128,24 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
     #upperBound = np.array([255, 255, 255])
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cuts(gray, direction, height, width, 0)
     thresh = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)[1]
     #thresh = cv2.inRange(img, lowerBound, upperBound)
     
     #Don't detect black letters
-    #thresh[np.logical_and(np.logical_and(blueChannel < 35, greenChannel < 35), redChannel < 35)] = 0
+    thresh[np.logical_and(np.logical_and(blueChannel < 35, greenChannel < 35), redChannel < 35)] = 0
     
     if showFrame:
-        cv2.imshow("thresh", thresh)
+        cv2.imshow("thresh - color", thresh)
 
     #thresh += 20
-    #print(img[height//2][width//2])
-    areaFilterMin = 750
+    #print(img[height//2 + 20][width//2 + 20])
+    areaFilterMin = 700
+    hwRatio = 1.43
 
     # Filtering for Yellow
     yellowFilter = np.zeros((height, width), dtype="uint8")
-    yellowFilterBool = np.logical_and(np.logical_and((greenChannel * 0.7 > blueChannel), (redChannel * 0.7 > blueChannel)), (np.absolute(greenChannel.astype(int)-redChannel.astype(int)) < 25)) # Make sure both Red and Green are much larger than blue as well as red and gren not too far from each other
+    yellowFilterBool = np.logical_and(np.logical_and((greenChannel * 0.7 > blueChannel), (redChannel * 0.7 > blueChannel)), (np.absolute(greenChannel.astype(int)-redChannel.astype(int)) < 30)) # Make sure both Red and Green are much larger than blue as well as red and gren not too far from each other
     #print("Abs diff:", int(greenChannel[height//2][width//2]) - int(redChannel[height//2][width//2]))
     #yellowFilterBool = np.logical_and((greenChannel * 0.55 > blueChannel), (redChannel * 0.55 > blueChannel))
     yellowFilter[yellowFilterBool == True] = 255
@@ -160,7 +164,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.5*h < w or 1.5*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundYellowVictim = True
@@ -191,7 +195,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundRedVictim = True
@@ -221,7 +225,7 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
-            if 1.8*h < w or 1.8*w < h: # If image dimensions are unreasonable
+            if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             else:
                 foundGreenVictim = True
@@ -248,9 +252,9 @@ def getColorVictim(img, showFrame=True, frameCounting=False, frameCount=1):
     #print(img[height//2][width//2])
     ratios = np.zeros((height, width, 1), dtype="uint8") # B/G, B/R, G/R
     #print("img Shape:", img.shape)
-    '''blueChannel = img[:,:,0]
-    greenChannel = img[:,:,1]
-    redChannel = img[:,:,2]'''
+    #blueChannel = img[:,:,0]
+    #greenChannel = img[:,:,1]
+    #redChannel = img[:,:,2]
     #print(redChannel)
     #print("redChannel Shape:", redChannel.shape)
     #filters = redChannel * 0.67 > greenChannel
@@ -266,3 +270,4 @@ def getColorVictim(img, showFrame=True, frameCounting=False, frameCount=1):
     #filtered = np.bitwise_and(thresh, filters)
     #frame.imshow('img',img) 
     cv2.imshow('filtered', filtered)
+'''

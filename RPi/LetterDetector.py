@@ -49,11 +49,20 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
     M = cv2.getRotationMatrix2D(center, angle, scale)
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
-def cuts(img, height, width, value = 0):
-    LRCUT = 45
-    TBCUT = 23
-    img[:, 0:LRCUT] = value
-    img[:, width-LRCUT:width] = value
+def cuts(img, direction, height, width, value = 0):
+    LRCUT = 24
+    TBCUT = 15
+    modifier = 35
+    if direction=="left":
+        img[:, 0:LRCUT+modifier] = value # Cut more left of the image
+    else:
+        img[:, 0:LRCUT] = value
+    
+    if direction=="right":
+        img[:, width-LRCUT-modifier:width] = value
+    else:
+        img[:, width-LRCUT:width] = value
+        
     img[0:TBCUT, :] = value
     img[height-TBCUT:height, :] = value
     return img
@@ -153,15 +162,16 @@ def cuts(img, height, width, value = 0):
 height = 0
 width = 0
 depth = 0
-hwRatio = 1.45
+hwRatio = 1.5
 
-def getLetter(img, showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
+def getLetter(img, direction="right", showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     global height, width, depth
     (height, width, depth) = img.shape
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
+    gray = cuts(gray, direction, height, width, 255)
+    
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 70, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(blurred, 90, 255, cv2.THRESH_BINARY)[1]
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
     
     return gbr
@@ -185,7 +195,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     thresh[:, width-50:width] = 255
     thresh[:, 0:50] = 255
     '''
-    thresh = cuts(thresh, height, width, 255)
+    
     if showFrame:
         cv2.imshow("thresh", thresh)
     if frameCounting:
@@ -211,8 +221,14 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
         if(cv2.contourArea(c)>300 and cv2.contourArea(c) < 10000):
 
             #GETTING BOUNDING RECTANGLE
+            #rect = cv2.minAreaRect(c)
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
+            #(x,y) = rect[0]
+            #(w, h) = rect[1]
+            angle = 0 #rect[2]
+            #print("Angle:", angle)
+            #cropped = thresh[max(y-10,0):min(y+h+10,height), max(x-10,0):min(x+w+10, width)]
             cropped = thresh[y:y+h, x:x+w]
             if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
@@ -220,7 +236,9 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             
             #CHECKING IF WE NED TO ROTATE ROI 
             if (w >= h):  #width must be smaller than height
-                cropped = RotateImage(cropped,90,1.0)
+                cropped = RotateImage(cropped,angle+90,1.0)
+            else:
+                cropped = RotateImage(cropped,angle,1.0)
             
             if showFrame:
                 cv2.imshow("ROI", cropped)
@@ -231,10 +249,10 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
 
             # SLICING TO GET THE THREE REGIONS
             roiy, roix = croppedCopy.shape
-            top = croppedCopy[0:(roiy//4),0:roix]
+            top = croppedCopy[0:int(roiy*0.33),0:roix]
             #mid = croppedCopy[int(roiy*0.37):int(roiy*0.67),0:roix]
-            mid = croppedCopy[int(roiy*0.4):int(roiy*0.60),0:roix]
-            bot = croppedCopy[int(3*roiy//4):roiy,0:roix]
+            mid = croppedCopy[int(roiy*0.40):int(roiy*0.6),0:roix]
+            bot = croppedCopy[int(roiy*0.70):roiy,0:roix]
 
             '''cv2.imwrite("RPi/HSU Stuff/H-Top.jpg", top)
             cv2.imwrite("RPi/HSU Stuff/H-Mid.jpg", mid)

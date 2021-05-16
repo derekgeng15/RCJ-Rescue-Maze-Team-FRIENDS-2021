@@ -11,8 +11,8 @@ from ColorDetector import *
 #frame = cv2.imread("img-tests/Nothing-test3.png")
 #frame = cv2.imread("Camera1 - 5.png")
 #frame = cv2.imread("H-sideways-small.jpg")
-#frame = cv2.imread("imgs/Camera1 Left - 16.png")
-frame = cv2.imread("imgs/Camera1 Right Cam - 34.png")
+frame = cv2.imread("imgs/Camera1 Left - 86.png")
+#frame = cv2.imread("imgs/Camera1 Right Cam - 34.png")
 cv2.imshow("frame", frame)
 
 #print("Got:", getLetter(frame))
@@ -20,7 +20,7 @@ cv2.imshow("frame", frame)
 
 color = getColorVictimVectorized(frame, showFrame=True)
 if color == None:
-    print(getLetter(frame))
+    print(getLetter(frame, direction='left'))
 else:
     print(color)
 
