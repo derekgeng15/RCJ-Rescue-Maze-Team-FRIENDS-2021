@@ -12,12 +12,15 @@ class SA{
   private:  
     String buff;
     //Direction getDir();
-    void writeConfirm();
-    void writeSerial(String x);
-    void readConfirm();
+    
+    
+    
   public:
+    void writeSerial(String x);
     //SA();
     String readIn();
+    void writeConfirm();
+    void readConfirm();
     String readSerial();
     void writeOut(String x);
 };

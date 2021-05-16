@@ -20,20 +20,15 @@ int light;
 void rightServo() {
   x.write(135);
   delay(1000);
-  for (int pos = 135; pos >= 80; pos -= 4) {
-    x.write(pos);              
-    delay(15);                       
-  }
+  x.write(80);
   delay(1000);
 }
 
 void leftServo() {
   x.write(45);
   delay(1000);
-  for (int pos = 45; pos <= 100; pos += 4) {
-    x.write(pos);              
-    delay(15);                      
-  }
+  x.write(100);
+  delay(1000);
   
 }
 
@@ -143,12 +138,17 @@ void readTile(){//read Tile data and send to PI
   else
     walls+="0";
    checkVictim();
-  _comm->writeOut(walls);
+  _comm->writeSerial(walls);
+   checkVictim();
+   delay(5);
+   //_comm->readConfirm();
 }
 
 void getPath(){//get BFS path from PI
   checkVictim();
-  path = _comm->readIn();
+  path = _comm->readSerial();
+  if(path.length() == 0)
+    while(1);
   step = 0;
 }
 
@@ -171,27 +171,46 @@ void checkVictim() {
             Serial.println("Stopping motors");
             Serial.print("SAW LETTER: ");
             Serial.println(letter);
-            //prev_victim = true;
-//            for(int i = 0; i < letter[0]-'0'; i++) {
-//              rightServo();
-//            }
-//          
+            
             digitalWrite(9, HIGH);
+            //prev_victim = true;
+            double prevAng = _chassis->getYaw();
+            double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+//            while(!_chassis->turnVic(fmod(prevAng + 45, 360)))
+//              _chassis->readChassis();
+            for(int i = 0; i < letter[0]-'0'; i++) {
+              rightServo();
+            }
+   
             delay(3000);
             digitalWrite(9, LOW);
+//            while(!_chassis->turnVic(prevAng))
+//              _chassis->readChassis();
+            _chassis->setCount(pL, pR);
           }
           if((_laser->getDist(2)<200 && letter[1] == 'L')) {
             _chassis->runMotors(0);
+            
             Serial.println("Stopping motors");
             Serial.print("SAW LETTER: ");
             Serial.println(letter);
             //prev_victim = true;
-//            for(int i = 0; i < letter[0]-'0'; i++) {
-//              leftServo();
-//            }
             digitalWrite(9, HIGH);
+            double prevAng = _chassis->getYaw();
+            double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+            double target = prevAng - 45;
+            if(target < 0)
+              target += 360;
+//            while(!_chassis->turnVic(target))
+//              _chassis->readChassis();
+            for(int i = 0; i < letter[0]-'0'; i++) {
+              leftServo();
+            }
             delay(3000);
             digitalWrite(9, LOW);
+//            while(!_chassis->turnVic(prevAng))
+//              _chassis->readChassis();
+            _chassis->setCount(pL, pR);
           }
         }
         victim = false;
@@ -225,6 +244,7 @@ bool followPath(){//TODO: Add state machine for following
           _chassis->runMotors(0);
           
           digitalWrite(9, HIGH);
+          
           delay(5000);
           digitalWrite(9, LOW);
           prev_victim = true;

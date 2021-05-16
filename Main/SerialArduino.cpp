@@ -23,8 +23,8 @@ String SA::readSerial(){
   Serial.println("Waiting for message");
   auto start = millis();
   while(!Serial2.available()){
-    Serial.println(millis() - start);
-    if(millis() - start >= 1000){
+    //Serial.println(millis() - start);
+    if(millis() - start >= 3000){
       Serial.println("Serial timeout");
       return "timeout";
     }

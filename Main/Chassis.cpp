@@ -51,9 +51,10 @@ void Chassis::updREnc(){
   else
     _rEnc.read(false);
 }
-double totalErr = 0;
+
 bool Chassis::turnTo(double deg){
   static double kP = 6;
+  static double totalErr = 0;
   double kI = 0.005;
   double error = deg - (yaw * 180 / PI);
   if(error > 180)
@@ -88,12 +89,51 @@ bool Chassis::turnTo(double deg){
     return true;
   }
 }
+
+bool Chassis::turnVic(double deg){
+  static double kP = 6;
+  static double totalErr = 0;
+  double kI = 0.005;
+  double error = deg - (yaw * 180 / PI);
+  if(error > 180)
+    error = 360 - error;
+  else if(error < -180)
+    error += 360;
+  if(abs(error) < 90) 
+   totalErr+=error;
+  if(error * kP + (totalErr*kI) < 0) {
+     lSpeed = min(error * kP + (totalErr*kI), -75);
+     rSpeed = min(error * kP + (totalErr*kI), -75);
+  }
+  else {
+    lSpeed = max(error * kP + (totalErr*kI), 75);
+    rSpeed = max(error * kP + (totalErr*kI), 75);
+  }
+  
+  if(abs(error) > 1){
+    _rMotor.run(lSpeed);
+    _lMotor.run(rSpeed);
+    counter++;
+    return false;
+  }
+  else{
+    Serial.println("Done Turning");
+    Serial.print("TURN COUNT: ");
+    Serial.println(counter);
+    _rMotor.run(0);
+    _lMotor.run(0);
+    totalErr = 0;
+    counter=0;
+    return true;
+  }
+}
+
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
   static double kP = 0.75;
   static double kD = 0;
-  double kI = 0.00;
+  double kI = 0.0005;
   double speed;
   lTotalErr+=(encPerMm * mm - lEncCt);
   //rTotalErr+=(encPerMm * mm - rEncCt);
@@ -161,4 +201,9 @@ void Chassis::print(){
 void Chassis::runMotors(double power) {
   _lMotor.run(power);
   _rMotor.run(-1*power);
+}
+
+void Chassis::setCount(int l, int r){
+  _lEnc.setCount(l);
+  _rEnc.setCount(r);
 }

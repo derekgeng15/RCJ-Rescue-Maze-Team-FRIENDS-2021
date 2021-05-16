@@ -35,6 +35,7 @@ class Chassis{
     void updLEnc();
     void updREnc();
     bool turnTo(double deg);
+    bool turnVic(double deg);
     bool goMm(double mm);
     void reset();
     void readChassis();
@@ -42,5 +43,6 @@ class Chassis{
     void updateEnc();
     void runMotors(double power);
     void resetR();
+    void setCount(int l, int r);
   
 };

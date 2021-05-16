@@ -21,26 +21,26 @@ void setup()
 }
 void loop()
 {
-//    rightServo();
-  readSensors();
-  checkVictim();
-  prevFunc();
-  switch(state){
-    case STATE::READING:{
-      readSensors();
-      readTile();
-      _comm->writeOut("Gib command");
-      getPath();
-      state = STATE::FOLLOWING;
-      delay(500);
-      break;
-    }
-    case STATE::FOLLOWING:{
-      if(followPath())
-        state = STATE::READING;
-      break;
-    }
-  }
+    leftServo();
+//  readSensors();
+//  checkVictim();
+//  prevFunc();
+//  switch(state){
+//    case STATE::READING:{
+//      readSensors();
+//      readTile();
+//      //_comm->writeOut("Gib command");
+//      getPath();
+//      state = STATE::FOLLOWING;
+//      delay(500);
+//      break;
+//    }
+//    case STATE::FOLLOWING:{
+//      if(followPath())
+//        state = STATE::READING;
+//      break;
+//    }
+//  }
 //  _laser->read();
 //  print();
 //  _chassis->turnTo(-90);
