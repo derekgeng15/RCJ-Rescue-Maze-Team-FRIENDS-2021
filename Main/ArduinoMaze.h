@@ -1,8 +1,7 @@
 
-#pragma once
-
 #include <Wire.h>
 #include <SparkFunMLX90614.h>
+//#include <Servo.h>
 
 #include <Arduino.h>
 #include <math.h>
@@ -27,6 +26,8 @@ enum DIRECTION{
 }extern currDir;
 
 const double ang[] = {0, 90, 180, -90};
+
+const int servPin = 2;
 
 extern double forward, angAdj;
 
@@ -56,3 +57,5 @@ void getPath();
 bool followPath();
 void checkVictim();
 void prevFunc();
+void leftServo();
+void rightServo();

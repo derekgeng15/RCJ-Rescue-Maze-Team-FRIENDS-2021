@@ -21,7 +21,7 @@ void setup()
 }
 void loop()
 {
-  
+//    rightServo();
   readSensors();
   checkVictim();
   prevFunc();
