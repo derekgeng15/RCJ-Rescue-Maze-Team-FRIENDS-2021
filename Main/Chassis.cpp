@@ -54,7 +54,7 @@ void Chassis::updREnc(){
 double totalErr = 0;
 bool Chassis::turnTo(double deg){
   static double kP = 6;
-  double kI = 0.08;
+  double kI = 0.005;
   double error = deg - (yaw * 180 / PI);
   if(error > 180)
     error = 360 - error;
@@ -62,7 +62,6 @@ bool Chassis::turnTo(double deg){
     error += 360;
   if(abs(error) < 90) 
    totalErr+=error;
-  
   if(error * kP + (totalErr*kI) < 0) {
      lSpeed = min(error * kP + (totalErr*kI), -75);
      rSpeed = min(error * kP + (totalErr*kI), -75);
