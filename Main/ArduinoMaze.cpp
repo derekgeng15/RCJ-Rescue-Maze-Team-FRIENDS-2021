@@ -8,12 +8,34 @@ LaserSystem *_laser;
 SA *_comm;
 IRTherm therm1;
 IRTherm therm2;
+Servo x;
+
 
 double threshold = 200;
 double forward, angAdj;
 String path;
 int step, skip;
 int light;
+
+void rightServo() {
+  x.write(135);
+  delay(1000);
+  for (int pos = 135; pos >= 80; pos -= 4) {
+    x.write(pos);              
+    delay(15);                       
+  }
+  delay(1000);
+}
+
+void leftServo() {
+  x.write(45);
+  delay(1000);
+  for (int pos = 45; pos <= 100; pos += 4) {
+    x.write(pos);              
+    delay(15);                      
+  }
+  
+}
 
 bool prev_victim = false;
 
@@ -44,7 +66,7 @@ DIRECTION getDir(char c){
 }
 
 void prevFunc() {
-  if(prev_victim && _chassis->getrEncCt()>encPerMm*100) {
+  if(prev_victim && _chassis->getrEncCt()>encPerMm*300) {
     Serial.println("PREV RESETTING");
     prev_victim = false;
   }
@@ -79,6 +101,8 @@ void begin(){
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, FALLING);
+  x.attach(servPin);
+  x.write(90);
   delay(2000);
 }
 void readSensors(){//read all sensors
@@ -139,17 +163,21 @@ void checkVictim() {
           return;
          }
         _laser->readAll();
-//        _laser->print();
-        if(step == path.length()- 1 && !prev_victim) {
+        _laser->print();
+        if(step >= path.length()- 1) {
           _chassis->resetR();
           if((_laser->getDist(3)<200 && letter[1] == 'R')) {
             _chassis->runMotors(0);
             Serial.println("Stopping motors");
             Serial.print("SAW LETTER: ");
             Serial.println(letter);
-            prev_victim = true;
+            //prev_victim = true;
+//            for(int i = 0; i < letter[0]-'0'; i++) {
+//              rightServo();
+//            }
+//          
             digitalWrite(9, HIGH);
-            delay(2000);
+            delay(3000);
             digitalWrite(9, LOW);
           }
           if((_laser->getDist(2)<200 && letter[1] == 'L')) {
@@ -157,9 +185,12 @@ void checkVictim() {
             Serial.println("Stopping motors");
             Serial.print("SAW LETTER: ");
             Serial.println(letter);
-            prev_victim = true;
+            //prev_victim = true;
+//            for(int i = 0; i < letter[0]-'0'; i++) {
+//              leftServo();
+//            }
             digitalWrite(9, HIGH);
-            delay(2000);
+            delay(3000);
             digitalWrite(9, LOW);
           }
         }
@@ -186,9 +217,16 @@ bool followPath(){//TODO: Add state machine for following
       if(therm1.read()) {
 //        Serial.print(" Temp 1: ");
 //        Serial.println(String(therm1.object(), 2));
-        if(therm1.object()>78 && !prev_victim) {
+        if(therm1.object()>80 && !prev_victim) {
+          Serial.println(therm1.object());
+
+          Serial.println("SAW HEAT\n");
           _chassis->resetR();
-          victim = true;
+          _chassis->runMotors(0);
+          
+          digitalWrite(9, HIGH);
+          delay(5000);
+          digitalWrite(9, LOW);
           prev_victim = true;
         }
       }
@@ -228,15 +266,19 @@ bool followPath(){//TODO: Add state machine for following
 //      else {
 //        Serial.println("Failed therm");
 //      }
-      if(therm1.read()) {
-        //Serial.print(" Temp 1: ");
-        //Serial.println(String(therm1.object(), 2));
-        if(therm1.object()>80 && !prev_victim) {
-          _chassis->resetR();
-          victim = true;
-          prev_victim = true;
+        if(therm1.read()) {
+          if(therm1.object()>80 && !prev_victim) {
+            Serial.println(therm1.object());
+            Serial.println("SAW HEAT\n");
+            _chassis->resetR();
+            _chassis->runMotors(0);
+            digitalWrite(9, HIGH);
+            delay(5000);
+            digitalWrite(9, LOW);
+            prev_victim = true;
+          }
+          
         }
-      }
       else {
        Serial.println("Failed therm 1");
       }
