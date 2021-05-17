@@ -29,7 +29,7 @@ def convertVictimToKits(victim):
         return "0"
     if victim=="RED":
         return "1"
-    if victim=="YELLOW":
+    if victim=="YELLOW" or victim[0]=='y' or victim[0]=="Y":
         return "1"
     if victim=="GREEN":
         return "0"
@@ -105,34 +105,35 @@ while True:
             print ("Something Bad Happened!")
             print(e)
         time.sleep(0.05)
-    ser.flush()
-    ser.write("Confirm\n".encode())
-    print("Responded to Arduino Confirm!")
+    #ser.flush()
+    #ser.write("Confirm\n".encode())
+    #print("Responded to Arduino Confirm!")
     if len(msg) >= 4 and msg[0:4]=="1111":
         print("Blackout!")
         AI.blackout()
-
-    # Waiting for Arduino to request Commands
-    done = False
-    print("Waiting...")
-    while not done:
-        try:
-            while(ser.in_waiting == 0): #if there's something in the buffer
-                pass
-            print("Size: " + str( ser.in_waiting))
-            x = ser.read_until("\n")
-            msg = x.decode('ascii')
-            print("Got:", msg, end="\n")
-            done = True
-         #   print("Bytes in buff: " + str(ser.in_waiting))
-        except IOError as e:
-            print ("Something Bad Happened!")
-            print(e)
-        time.sleep(0.05)
-    ser.flush()
-    ser.write("Confirm\n".encode())
-    print("Responded to Arduino Confirm!")
     
+    '''if len(msg) < 10:
+        # Waiting for Arduino to request Commands
+        done = False
+        print("Waiting...")
+        while not done:
+            try:
+                while(ser.in_waiting == 0): #if there's something in the buffer
+                    pass
+                print("Size: " + str( ser.in_waiting))
+                x = ser.read_until("\n")
+                msg = x.decode('ascii')
+                print("Got:", msg, end="\n")
+                done = True
+             #   print("Bytes in buff: " + str(ser.in_waiting))
+            except IOError as e:
+                print ("Something Bad Happened!")
+                print(e)
+            time.sleep(0.05)
+        ser.flush()
+        ser.write("Confirm\n".encode())
+        print("Responded to Arduino Confirm!")
+    '''
     commands = AI.calculate()
     commandsMsg = ""
     for command in commands:
@@ -153,7 +154,7 @@ while True:
     if len(commands) == 0:
         print("WE\'RE DONE!!!!!!!!!!!!!!!!!!!!!!!")
         break
-    done = False
+    '''done = False
     while not done:
         try:
             while(ser.in_waiting > 0): #if there's something in the buffer
@@ -165,7 +166,7 @@ while True:
         except IOError as e:
             print ("Something Bad Happened!")
             print(e)
-        time.sleep(0.05)
+        time.sleep(0.05)'''
 
     # Victim Deteciton Loop
     letterBufferL = [None,None]
@@ -192,7 +193,7 @@ while True:
         else:
             print("Saw Nothing! -", frameCount)'''
 
-        if last_seen_frame + 15 >= frameCount:
+        if last_seen_frame + 20 >= frameCount:
             frameCount += 1
             continue
 
@@ -204,7 +205,7 @@ while True:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
             print("Saw Left Cam:", victimL, "at frame -", frameCount)
-            #cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
+            cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
             #continue 
         else:
             print("Saw Nothing Left Cam! -", frameCount)
@@ -217,7 +218,7 @@ while True:
             #ser.write((commandsMsg).encode())
             #print("Sent: " + commandsMsg)
             print("Saw Right Cam:", victimR, "at frame -", frameCount)
-            #cv2.imwrite("imgs/Camera1 Right Cam - " + str(frameCount) + ".png", frameR)
+            cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
             #continue 
         else:
             print("Saw Nothing Right Cam! -", frameCount)
@@ -233,6 +234,8 @@ while True:
         cv2.waitKey(1)
         #if letterBuffer[0] != None and (letterBuffer[0]==letterBuffer[1] and letterBuffer[1]==letterBuffer[2]):
         if letterBufferL[0] != None and (letterBufferL[0]==letterBufferL[1]):
+            if ser.in_waiting != 0:
+                continue
             print("Set Interrupt Pin to High!")
             GPIO.output(COMPORT, GPIO.HIGH)
             time.sleep(0.15)
@@ -258,10 +261,12 @@ while True:
             #time.sleep(1.5)
             
             last_seen_frame = frameCount
-            cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
+            #cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
             break
 
         elif letterBufferR[0] != None and (letterBufferR[0]==letterBufferR[1]):
+            if ser.in_waiting != 0:
+                continue
             print("Set Interrupt Pin to High!")
             GPIO.output(COMPORT, GPIO.HIGH)
             print("Sent Right Cam Victim to Arduino:", victimR)
@@ -272,7 +277,7 @@ while True:
             #time.sleep(1.5)
             print("Set Interrupt Pin back to Low!")
             last_seen_frame = frameCount
-            cv2.imwrite("imgs/Camera1 Right Cam - " + str(frameCount) + ".png", frameR)
+            #cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
             break
         
 

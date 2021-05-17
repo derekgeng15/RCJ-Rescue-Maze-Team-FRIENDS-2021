@@ -140,8 +140,9 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     #thresh += 20
     #print(img[height//2 + 20][width//2 + 20])
-    areaFilterMin = 700
-    hwRatio = 1.43
+    areaFilterMin = 1200
+    areaFilterMax = 10000
+    hwRatio = 1.65
 
     # Filtering for Yellow
     yellowFilter = np.zeros((height, width), dtype="uint8")
@@ -160,7 +161,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
     contours, h = cv2.findContours(yellowAreaFiltered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     foundYellowVictim = False
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>areaFilterMin):
+        if(cv2.contourArea(c)>areaFilterMin and cv2.contourArea(c)<areaFilterMax):
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
@@ -168,6 +169,8 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
                 continue
             else:
                 foundYellowVictim = True
+            print("Area of ROI Contour:", cv2.contourArea(c))
+            print("HW Ratio:", h/w, "WH Ratio:", w/h) 
             if showFrame:
                 cv2.imshow("ROI", img[y:y+h, x:x+w])
     
@@ -177,7 +180,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     # Filtering for Red
     redFilter = np.zeros((height, width), dtype="uint8")
-    redFilterBool = redChannel * 0.75 > greenChannel
+    redFilterBool = redChannel * 0.5 > greenChannel
     redFilter[redFilterBool == True] = 255
     redFiltered = np.bitwise_and(thresh, redFilter)
 
@@ -191,7 +194,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
     contours, h = cv2.findContours(redAreaFiltered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     foundRedVictim = False
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>areaFilterMin):
+        if(cv2.contourArea(c)>areaFilterMin and cv2.contourArea(c)<areaFilterMax):
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
@@ -199,6 +202,8 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
                 continue
             else:
                 foundRedVictim = True
+            print("Area of ROI Contour:", cv2.contourArea(c))
+            print("HW Ratio:", h/w, "WH Ratio:", w/h) 
             if showFrame:
                 cv2.imshow("ROI", img[y:y+h, x:x+w])
     
@@ -221,7 +226,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
     contours, h = cv2.findContours(greenAreaFiltered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     foundGreenVictim = False
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>areaFilterMin):
+        if(cv2.contourArea(c)>areaFilterMin and cv2.contourArea(c)<areaFilterMax):
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
@@ -229,6 +234,8 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
                 continue
             else:
                 foundGreenVictim = True
+            print("Area of ROI Contour:", cv2.contourArea(c))
+            print("HW Ratio:", h/w, "WH Ratio:", w/h) 
             if showFrame:
                 cv2.imshow("ROI", img[y:y+h, x:x+w])
     

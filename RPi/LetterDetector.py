@@ -50,9 +50,9 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
 def cuts(img, direction, height, width, value = 0):
-    LRCUT = 24
+    LRCUT = 35
     TBCUT = 15
-    modifier = 35
+    modifier = 55
     if direction=="left":
         img[:, 0:LRCUT+modifier] = value # Cut more left of the image
     else:
@@ -162,7 +162,7 @@ def cuts(img, direction, height, width, value = 0):
 height = 0
 width = 0
 depth = 0
-hwRatio = 1.5
+hwRatio = 1.7
 
 def getLetter(img, direction="right", showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     global height, width, depth
@@ -218,7 +218,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>300 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>2000 and cv2.contourArea(c) < 5700):
 
             #GETTING BOUNDING RECTANGLE
             #rect = cv2.minAreaRect(c)
@@ -226,8 +226,8 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             x,y,w,h = rect
             #(x,y) = rect[0]
             #(w, h) = rect[1]
-            angle = 0 #rect[2]
-            #print("Angle:", angle)
+            angle = 0 #cv2.minAreaRect(c)[-1]
+            print("Angle:", angle)
             #cropped = thresh[max(y-10,0):min(y+h+10,height), max(x-10,0):min(x+w+10, width)]
             cropped = thresh[y:y+h, x:x+w]
             if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
@@ -239,6 +239,9 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
                 cropped = RotateImage(cropped,angle+90,1.0)
             else:
                 cropped = RotateImage(cropped,angle,1.0)
+                
+            print("Area of ROI Contour:", cv2.contourArea(c))
+            print("HW Ratio:", h/w, "WH Ratio:", w/h) 
             
             if showFrame:
                 cv2.imshow("ROI", cropped)
@@ -249,10 +252,10 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
 
             # SLICING TO GET THE THREE REGIONS
             roiy, roix = croppedCopy.shape
-            top = croppedCopy[0:int(roiy*0.33),0:roix]
+            top = croppedCopy[0:int(roiy*0.23),0:roix]
             #mid = croppedCopy[int(roiy*0.37):int(roiy*0.67),0:roix]
-            mid = croppedCopy[int(roiy*0.40):int(roiy*0.6),0:roix]
-            bot = croppedCopy[int(roiy*0.70):roiy,0:roix]
+            mid = croppedCopy[int(roiy*0.43):int(roiy*0.57),0:roix]
+            bot = croppedCopy[int(roiy*0.73):roiy,0:roix]
 
             '''cv2.imwrite("RPi/HSU Stuff/H-Top.jpg", top)
             cv2.imwrite("RPi/HSU Stuff/H-Mid.jpg", mid)
