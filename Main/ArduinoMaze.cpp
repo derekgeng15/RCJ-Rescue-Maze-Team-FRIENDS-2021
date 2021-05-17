@@ -22,12 +22,16 @@ void rightServo() {
   delay(1000);
   x.write(80);
   delay(1000);
+  x.write(90);
+  delay(1000);
 }
 
 void leftServo() {
   x.write(45);
   delay(1000);
   x.write(100);
+  delay(1000);
+  x.write(90);
   delay(1000);
   
 }
@@ -116,14 +120,17 @@ void print(){
 }
 void readTile(){//read Tile data and send to PI
   String walls = ""; //Front, Right, Back, Left (Clockwise)
-  _laser->readAll();
+  for(int i = 0; i < 3; i++)
+    _laser->readAll();
   _laser->print();
-  if(_laser->getDist(1) < threshold) {
+  if(_laser->getDist(1) < threshold || _laser->getDist(0) < threshold ) {
     walls+="1";
     Serial.println("First Sensor Seen");
   }
   else
     walls+="0";
+
+
   if(_laser->getDist(3) < threshold) {
     Serial.println("Second Sensor Seen");
     walls+="1";
@@ -147,8 +154,11 @@ void readTile(){//read Tile data and send to PI
 void getPath(){//get BFS path from PI
   checkVictim();
   path = _comm->readSerial();
-  if(path.length() == 0)
+  String letter;
+  if(path.length() == 0) {
+    Serial.println("DONE WITH ALL");
     while(1);
+  }
   step = 0;
 }
 
@@ -244,7 +254,7 @@ bool followPath(){//TODO: Add state machine for following
           _chassis->runMotors(0);
           
           digitalWrite(9, HIGH);
-          
+          leftServo();
           delay(5000);
           digitalWrite(9, LOW);
           prev_victim = true;
@@ -254,7 +264,7 @@ bool followPath(){//TODO: Add state machine for following
         currDir = (currDir + getDir(path[step]))%4;
         _laser->readAll();
         angAdj = 0;
-        double fe = TILE_SIZE + 40;
+        double fe = TILE_SIZE + 30;
         if(min(_laser->getDist(0), _laser->getDist(1)) < 450)
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE) + (TILE_SIZE)/2 + 120;
         if(_laser->getDist(2) < TILE_SIZE)
@@ -293,6 +303,7 @@ bool followPath(){//TODO: Add state machine for following
             _chassis->resetR();
             _chassis->runMotors(0);
             digitalWrite(9, HIGH);
+            leftServo();
             delay(5000);
             digitalWrite(9, LOW);
             prev_victim = true;
