@@ -24,7 +24,7 @@ String SA::readSerial(){
   auto start = millis();
   while(!Serial2.available()){
     Serial.println(millis() - start);
-    if(millis() - start >= 1000){
+    if(millis() - start >= 3000){
       Serial.println("Serial timeout");
       return "timeout";
     }

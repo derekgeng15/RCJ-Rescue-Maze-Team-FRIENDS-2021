@@ -21,7 +21,8 @@ void setup()
 }
 void loop()
 {
-//    rightServo();
+//    leftServo();
+    
   readSensors();
   checkVictim();
   prevFunc();
@@ -29,7 +30,7 @@ void loop()
     case STATE::READING:{
       readSensors();
       readTile();
-      _comm->writeOut("Gib command");
+      //_comm->writeOut("Gib command");
       getPath();
       state = STATE::FOLLOWING;
       delay(500);
@@ -41,8 +42,9 @@ void loop()
       break;
     }
   }
-//  _laser->read();
+//  _laser->readAll();
 //  print();
+//  delay(500);
 //  _chassis->turnTo(-90);
   
 }

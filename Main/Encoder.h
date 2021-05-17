@@ -12,6 +12,7 @@ class Encoder {
     void read(bool backwards);
     void reset();
     int getCount();
+    void setCount(int ct);
     uint8_t getIntPin();
     uint8_t getNEPin();
 };
