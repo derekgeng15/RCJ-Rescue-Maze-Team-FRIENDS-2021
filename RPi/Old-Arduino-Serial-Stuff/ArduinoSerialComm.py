@@ -1,5 +1,5 @@
 # Arduino Serial with Comm Library
-import Comm as comm
+from comm import Comm
 import time
 from nav import Nav
 import math

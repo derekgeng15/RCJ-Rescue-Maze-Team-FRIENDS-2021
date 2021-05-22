@@ -2,53 +2,124 @@ import serial
 import struct
 import time
 import numpy as np
+import RPi.GPIO as GPIO
 
-int_encode = b'2'
+'''int_encode = b'2'
 float_encode = b'42.3'
 confirm ="Confirm\n"
 #string1_encode = string1.encode()
 
 #ser = serial.Serial('/dev/ttyAMA0', 9600)
+'''
 
-ser = serial.Serial(
-    port = '/dev/serial0',
-    baudrate = 9600,
-    parity=serial.PARITY_NONE,
-    stopbits=serial.STOPBITS_ONE,
-    bytesize=serial.EIGHTBITS,
-    timeout=1
-)
+class Comm:
+    def __init__(self):
+        self.ser = serial.Serial(
+            port = '/dev/serial0',
+            baudrate = 9600,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            bytesize=serial.EIGHTBITS,
+            timeout=1
+        )
 
-def in_waiting():
-    return ser.in_waiting
+        # GPIO Stuff
+        self.INTERRUPT = 4 # Port 3 on MegaPi
+        self.BITONE = 16 # Corresponds to Pin 2 on Arduino
+        self.BITTWO = 20 # Corresponds to Pin 5 on Arduino
+        self.DIRECTIONPIN = 21
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.INTERRUPT, GPIO.OUT)
+        GPIO.setup(self.BITONE, GPIO.OUT)
+        GPIO.setup(self.BITTWO, GPIO.OUT)
+        GPIO.setup(self.DIRECTIONPIN, GPIO.OUT)
+        self.setPins() # Default sets all pins to low
 
-# Just waits for buffer to be availble, and then reads it in
-def read():
-    done = False
-    print("Waiting...")
-    while not done:
-        try:
-            while(ser.in_waiting == 0): #if there's something in the buffer
-                pass
-            #print("Size: " + str( ser.in_waiting))
-            x = ser.read_until("\n")
-            msg = x.decode('ascii')
-            print("Got: \"", msg, "\" from arduino", end="\n")
-            done = True
-            # print("Bytes in buff: " + str(ser.in_waiting))
-        except IOError as e:
-            print ("Something Bad Happened!")
-            print(e)
-        time.sleep(0.05)
-    #ser.flush()
-    return msg
+    def in_waiting(self):
+        return self.ser.in_waiting == 0
 
-# Just writes a message to arduino
-def write(msg):
-    ser.write((msg+"\n").encode())
-    #ser.flush()
-    print("Wrote:\"", msg, "\" to arduino")
+    # Sets all pins (interrupt, letter, bitone, bittwo)
+    def setPins(self, interrupt=GPIO.LOW, bittone=GPIO.LOW, bittwo=GPIO.LOW, directionpin=GPIO.LOW):
+        GPIO.output(self.INTERRUPT, interrupt)
+        GPIO.output(self.BITONE, bittone)
+        GPIO.output(self.BITTWO, bittwo)
+        GPIO.output(self.DIRECTIONPIN, directionpin)
 
+    # Just waits for buffer to be availble, and then reads it in
+    def read(self):
+        done = False
+        print("Waiting...")
+        while not done:
+            try:
+                while(self.in_waiting()): #if there's something in the buffer
+                    pass
+                x = self.ser.read_until("\n")
+                msg = x.decode('ascii')
+                print("Recieved: \"", msg, "\" from arduino")
+                print("Message Size:", self.ser.in_waiting)
+                done = True
+            except IOError as e:
+                print ("Something Bad Happened!")
+                print(e)
+            time.sleep(0.05)
+        return msg
+
+    # Just writes a message to arduino
+    def write(self, msg):
+        self.ser.write((msg+'\n').encode())
+        self.ser.flush()
+        print("Wrote: \"", msg, "\" to arduino")
+
+    def convertVictimToKits(self, victim):
+        victim.upper()
+        if victim=="H":
+            return 3
+        if victim=="S":
+            return 2
+        if victim=="U":
+            return 0
+        if victim=="RED":
+            return 1
+        if victim=="YELLOW" or victim[0]=='y' or victim[0]=="Y":
+            return 1
+        if victim=="GREEN":
+            return 0
+        return 0
+    
+    def sendVictim(self, victim, direction):
+        # Interrupts the Arduino to notify found victim
+        print("Set Interrupt Pin to High!")
+        GPIO.output(self.INTERRUPT, GPIO.HIGH)
+        time.sleep(0.15)
+        GPIO.output(self.INTERRUPT, GPIO.LOW)
+        print("Set Interrupt Pin back to Low!")
+        
+        # Number of kits
+        numberOfKits = self.convertVictimToKits(victim)
+        bits = [GPIO.LOW, GPIO.LOW]
+        if numberOfKits == 1:
+            bits = [GPIO.HIGH, GPIO.LOW]
+        if numberOfKits == 2:
+            bits = [GPIO.LOW, GPIO.HIGH]
+        if numberOfKits == 3:
+            bits = [GPIO.HIGH, GPIO.HIGH]
+
+        # Direction
+        dir = None
+        if direction == "left":
+            dir = GPIO.LOW
+        else:
+            dir = GPIO.HIGH
+        
+        # Send over victim info
+        print("Sending Victim:", numberOfKits, direction)
+        self.setPins(bittone=bits[0], bittwo=bits[1], directionpin=dir)
+        time.sleep(0.8)
+        self.setPins() # Reset all pins back to low
+        print("Done!")
+
+# OUTDATED===================================================================
+'''
 # Read and then write a confirm message
 def readIn():
     msg = read()
@@ -61,3 +132,4 @@ def writeOut(msg):
     write(msg)
     confimration = read()
     print("Recieved Confimration Message!")
+'''
