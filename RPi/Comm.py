@@ -87,13 +87,6 @@ class Comm:
         return 0
     
     def sendVictim(self, victim, direction):
-        # Interrupts the Arduino to notify found victim
-        print("Set Interrupt Pin to High!")
-        GPIO.output(self.INTERRUPT, GPIO.HIGH)
-        time.sleep(0.15)
-        GPIO.output(self.INTERRUPT, GPIO.LOW)
-        print("Set Interrupt Pin back to Low!")
-        
         # Number of kits
         numberOfKits = self.convertVictimToKits(victim)
         bits = [GPIO.LOW, GPIO.LOW]
@@ -114,8 +107,15 @@ class Comm:
         # Send over victim info
         print("Sending Victim:", numberOfKits, direction)
         self.setPins(bittone=bits[0], bittwo=bits[1], directionpin=dir)
-        time.sleep(0.8)
-        self.setPins() # Reset all pins back to low
+
+        # Interrupts the Arduino to notify found victim
+        print("Set Interrupt Pin to High!")
+        GPIO.output(self.INTERRUPT, GPIO.HIGH)
+        time.sleep(0.15)
+        GPIO.output(self.INTERRUPT, GPIO.LOW)
+        print("Set Interrupt Pin back to Low!")
+        
+        #self.setPins() # Reset all pins back to low
         print("Done!")
 
 # OUTDATED===================================================================
