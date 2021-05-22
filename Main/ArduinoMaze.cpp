@@ -240,6 +240,7 @@ bool followPath(){//TODO: Add state machine for following
 //      while(skip < path.length() && path[skip] == 'U')
 //        skip++;
       fstate = TURNING;
+      myTime = millis();
       break;
     }
     case FSTATE::TURNING:{
@@ -260,6 +261,8 @@ bool followPath(){//TODO: Add state machine for following
           prev_victim = true;
         }
       }
+      //Serial.print(millis()-myTime);
+      //Serial.print(" ");
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
         currDir = (currDir + getDir(path[step]))%4;
         _laser->readAll();
@@ -313,6 +316,8 @@ bool followPath(){//TODO: Add state machine for following
       else {
        Serial.println("Failed therm 1");
       }
+     // Serial.print(millis()-myTime);
+     // Serial.print(" ");
       if(_chassis->goMm(forward)){
         fstate = FORADJ;
       }

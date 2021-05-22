@@ -22,8 +22,8 @@ void setup()
 void loop()
 {
 //    leftServo();
-    
-  readSensors();
+    //test("R");
+    readSensors();
   checkVictim();
   prevFunc();
   switch(state){

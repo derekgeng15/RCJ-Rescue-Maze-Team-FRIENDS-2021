@@ -57,6 +57,7 @@ bool Chassis::turnTo(double deg){
   static double totalErr = 0;
   double kI = 0.005;
   double error = deg - (yaw * 180 / PI);
+  //Serial.println((yaw * 180 / PI));
   if(error > 180)
     error = 360 - error;
   else if(error < -180)
@@ -135,6 +136,7 @@ bool Chassis::goMm(double mm){
   static double kD = 0;
   double kI = 0.0005;
   double speed;
+  //Serial.println(lEncCt);
   lTotalErr+=(encPerMm * mm - lEncCt);
   //rTotalErr+=(encPerMm * mm - rEncCt);
   if(abs(lEncCt - (encPerMm * mm))>9){
