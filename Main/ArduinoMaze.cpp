@@ -18,22 +18,25 @@ int step, skip;
 int light;
 
 void rightServo() {
+  x.attach(servPin);
   x.write(135);
   delay(1000);
   x.write(80);
   delay(1000);
   x.write(90);
   delay(1000);
+  x.detach();
 }
 
 void leftServo() {
+  x.attach(servPin);
   x.write(45);
   delay(1000);
   x.write(100);
   delay(1000);
   x.write(90);
   delay(1000);
-  
+  x.detach();
 }
 
 bool prev_victim = false;
@@ -105,12 +108,13 @@ void begin(){
   attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, FALLING);
   x.attach(servPin);
   x.write(90);
+  x.detach();
   delay(2000);
 }
 void readSensors(){//read all sensors
   _chassis->readChassis();
   light = analogRead(A7);
-  _laser->readAll();  
+  // _laser->readAll();  
 }
 void print(){
   Serial.println("--------------------");
@@ -123,8 +127,11 @@ void print(){
 }
 void readTile(){//read Tile data and send to PI
   String walls = ""; //Front, Right, Back, Left (Clockwise)
-  for(int i = 0; i < 3; i++)
-    _laser->readAll();
+  // for(int i = 0; i < 3; i++){
+  //   _laser->readAll();
+  //   _laser->print();
+  // }
+  _laser->readAll();
   _laser->print();
   if(_laser->getDist(1) < threshold || _laser->getDist(0) < threshold ) {
     walls+="1";
@@ -181,7 +188,7 @@ void checkVictim() {
         _laser->print();
         if(step >= path.length()- 1) {
           _chassis->resetR();
-          if((_laser->getDist(3)<200 && side == 0)) {
+          if((_laser->getDist(3)<200 && side == 1)) {
             _chassis->runMotors(0);
             Serial.println("Stopping motors");
             Serial.print("SAW LETTER RIGHT: ");
@@ -203,7 +210,7 @@ void checkVictim() {
 //              _chassis->readChassis();
             _chassis->setCount(pL, pR);
           }
-          if((_laser->getDist(2)<200 && side == 1)) {
+          if((_laser->getDist(2)<200 && side == 0)) {
             _chassis->runMotors(0);
             
             Serial.println("Stopping motors");

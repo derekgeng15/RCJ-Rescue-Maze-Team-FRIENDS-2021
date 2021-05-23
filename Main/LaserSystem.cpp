@@ -47,11 +47,13 @@ void LaserSystem::readAll(){
       // laser[i].rangingTest(&measure[i], false);
       // dist[i] = -1;
       // dist[i] = measure[i].RangeMilliMeter;
-      //POLOLU
+      // POLOLU
       dist[i] = laser[i].readRangeContinuousMillimeters();
+      // dist[i] = laser[i].readRangeSingleMillimeters();
       if(laser[i].timeoutOccurred()){
         Serial.print("Laser timeout:");
         Serial.println(i);
+        dist[i] = -1;
       }
     }
 }
