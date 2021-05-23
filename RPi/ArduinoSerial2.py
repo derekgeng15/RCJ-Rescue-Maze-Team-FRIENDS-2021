@@ -39,11 +39,14 @@ time.sleep(1)
 
 frame_size = (320, 240)  #Width, Height
 last_seen_frame=-5
+cycle_count = 1
 
 AI = Nav(readInWall=True)
 COMM = Comm()
 
 while True:
+    print("\n--- CYCLE ", cycle_count, "---") # To denote new cycle
+    cycle_count+= 1
     # Read in Arduino Wall Data for Current Tile
     msg = COMM.read()
 
@@ -85,7 +88,7 @@ while True:
     letterBufferL = [None,None]
     letterBufferR = [None,None]
 
-    while(ser.in_waiting == 0): #cap.isOpened() and 
+    while(COMM.in_waiting()): #cap.isOpened() and 
 
         # Capture frame-by-frame
         ret, frameL = capL.read()
@@ -150,8 +153,6 @@ while True:
             # if writeFrames:
             #     cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
             break
-
-    print("\n---NEW CYCLE---") # To denote new cycle
 
 capL.release()
 capR.release()

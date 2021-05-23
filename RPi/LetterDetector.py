@@ -227,7 +227,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             #(x,y) = rect[0]
             #(w, h) = rect[1]
             angle = 0 #cv2.minAreaRect(c)[-1]
-            print("Angle:", angle)
+            #print("Angle:", angle)
             #cropped = thresh[max(y-10,0):min(y+h+10,height), max(x-10,0):min(x+w+10, width)]
             cropped = thresh[y:y+h, x:x+w]
             if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
