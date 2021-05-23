@@ -15,12 +15,23 @@ void LaserSystem::init(){
     digitalWrite(shut[i], LOW);
   for(int i = 0; i < NUM_OF_SENSORS; i++){
     digitalWrite(shut[i], HIGH);
-    if(!laser[i].begin(ID[i])){
+    //ADAFRUIT
+    // if(!laser[i].begin(ID[i])){
+    //   Serial.print("Failed to Boot ");
+    //   Serial.println(i);
+    //   while(1)
+    //     ;
+    // }
+    //POLOLU
+    laser[i].setTimeout(500);
+    if(!laser[i].init()){
       Serial.print("Failed to Boot ");
       Serial.println(i);
       while(1)
         ;
     }
+    laser[i].setAddress(ID[i]);
+    laser[i].startContinuous();
     delay(10);
   }
   Serial.println("IDs set");
@@ -32,9 +43,16 @@ double LaserSystem::getDist(int ID){
 void LaserSystem::readAll(){
     Serial.println("READING LASERS");
     for(int i = 0; i < NUM_OF_SENSORS; i++){
-      laser[i].rangingTest(&measure[i], false);
-      dist[i] = -1;
-      dist[i] = measure[i].RangeMilliMeter;
+      //ADAFRUIT
+      // laser[i].rangingTest(&measure[i], false);
+      // dist[i] = -1;
+      // dist[i] = measure[i].RangeMilliMeter;
+      //POLOLU
+      dist[i] = laser[i].readRangeContinuousMillimeters();
+      if(laser[i].timeoutOccurred()){
+        Serial.print("Laser timeout:");
+        Serial.println(i);
+      }
     }
 }
 void LaserSystem::print(){

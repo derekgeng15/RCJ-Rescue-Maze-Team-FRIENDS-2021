@@ -33,7 +33,7 @@ void loop()
       //_comm->writeOut("Gib command");
       getPath();
       state = STATE::FOLLOWING;
-      delay(500);
+      // delay(500);
       break;
     }
     case STATE::FOLLOWING:{

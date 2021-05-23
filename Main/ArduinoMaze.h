@@ -1,7 +1,6 @@
 
 #include <Wire.h>
 #include <SparkFunMLX90614.h>
-//#include <Servo.h>
 
 #include <Arduino.h>
 #include <math.h>
@@ -41,6 +40,7 @@ extern int step, skip;
 extern volatile bool victim;
 
 const int sPin = 3;
+const int vPinA = 2, vPinB = 5, vPinC = 4;
 extern bool prev_victim;
 
 

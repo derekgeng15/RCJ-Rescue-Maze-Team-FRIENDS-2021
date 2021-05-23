@@ -96,6 +96,9 @@ void begin(){
 //  therm2.setUnit(TEMP_F);
   Serial.println("Finished therms");
   pinMode(sPin, INPUT_PULLUP);
+  pinMode(vPinA, INPUT);
+  pinMode(vPinB, INPUT);
+  pinMode(vPinC, INPUT);
   pinMode(9, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
@@ -107,7 +110,7 @@ void begin(){
 void readSensors(){//read all sensors
   _chassis->readChassis();
   light = analogRead(A7);
-  //_laser->read();  
+  _laser->readAll();  
 }
 void print(){
   Serial.println("--------------------");
@@ -163,24 +166,26 @@ void getPath(){//get BFS path from PI
 }
 
 void checkVictim() {
-  String letter;
+  // String letter;
   if(victim) {
         _chassis->runMotors(0);
-        Serial.println("\nRECIEVED SOMETHING\n");
-        letter = _comm->readSerial();
-        if(letter[0] == 't'){
-          victim = false;
-          return;
-         }
+        // Serial.println("\nRECIEVED SOMETHING\n");
+        // letter = _comm->readSerial();
+        // if(letter[0] == 't'){
+        //   victim = false;
+        //   return;
+        //  }
+        int num = digitalRead(vPinA) * 2 + digitalRead(vPinB);
+        int side = digitalRead(vPinC);
         _laser->readAll();
         _laser->print();
         if(step >= path.length()- 1) {
           _chassis->resetR();
-          if((_laser->getDist(3)<200 && letter[1] == 'R')) {
+          if((_laser->getDist(3)<200 && side == 0)) {
             _chassis->runMotors(0);
             Serial.println("Stopping motors");
-            Serial.print("SAW LETTER: ");
-            Serial.println(letter);
+            Serial.print("SAW LETTER RIGHT: ");
+            Serial.println(num);
             
             digitalWrite(9, HIGH);
             //prev_victim = true;
@@ -188,7 +193,7 @@ void checkVictim() {
             double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
 //            while(!_chassis->turnVic(fmod(prevAng + 45, 360)))
 //              _chassis->readChassis();
-            for(int i = 0; i < letter[0]-'0'; i++) {
+            for(int i = 0; i < num; i++) {
               rightServo();
             }
    
@@ -198,12 +203,12 @@ void checkVictim() {
 //              _chassis->readChassis();
             _chassis->setCount(pL, pR);
           }
-          if((_laser->getDist(2)<200 && letter[1] == 'L')) {
+          if((_laser->getDist(2)<200 && side == 1)) {
             _chassis->runMotors(0);
             
             Serial.println("Stopping motors");
-            Serial.print("SAW LETTER: ");
-            Serial.println(letter);
+            Serial.print("SAW LETTER LEFT: ");
+            Serial.println(num);
             //prev_victim = true;
             digitalWrite(9, HIGH);
             double prevAng = _chassis->getYaw();
@@ -213,7 +218,7 @@ void checkVictim() {
               target += 360;
 //            while(!_chassis->turnVic(target))
 //              _chassis->readChassis();
-            for(int i = 0; i < letter[0]-'0'; i++) {
+            for(int i = 0; i < num; i++) {
               leftServo();
             }
             delay(3000);
