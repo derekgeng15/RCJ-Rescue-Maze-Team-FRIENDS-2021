@@ -126,6 +126,10 @@ void print(){
   Serial.println("--------------------");
 }
 void readTile(){//read Tile data and send to PI
+  if(fstate == BLACKTILE){
+    _comm->writeSerial("1111");
+    return;
+  }
   String walls = ""; //Front, Right, Back, Left (Clockwise)
   // for(int i = 0; i < 3; i++){
   //   _laser->readAll();
@@ -170,6 +174,7 @@ void getPath(){//get BFS path from PI
     while(1);
   }
   step = 0;
+  fstate = CALC;
 }
 
 void checkVictim() {
@@ -245,6 +250,9 @@ bool followPath(){//TODO: Add state machine for following
        * if see black, call ai blackout(rPI serial)
        * 
        */
+  if(light > blackThresh && fstate != FSTATE::BLACKTILE)
+      fstate = FSTATE::BLACKTILE;
+  
   //readSensors();
   switch(fstate){
     case FSTATE::CALC:{
@@ -349,9 +357,12 @@ bool followPath(){//TODO: Add state machine for following
       }
       break;
     }
-//    case FSTATE::BLACKTILE{
-//      chassis.goto(0);
-//    }
+    case FSTATE::BLACKTILE:{
+      if(_chassis->goMm(0)){
+        return true;
+      }
+      break;
+    }
   }
   return false;
 }

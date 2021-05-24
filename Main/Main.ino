@@ -23,7 +23,7 @@ void loop()
 {
 //    leftServo();
     //test("R");
-    readSensors();
+  readSensors();
   checkVictim();
   prevFunc();
   switch(state){

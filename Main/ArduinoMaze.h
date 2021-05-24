@@ -17,7 +17,7 @@
 #define TILE_SIZE 300
 
 enum FSTATE {
-  CALC, TURNING, TURNADJ, FORWARD, FORADJ
+  CALC, TURNING, TURNADJ, FORWARD, FORADJ, BLACKTILE
 }extern fstate;
 
 enum DIRECTION{
@@ -43,6 +43,7 @@ const int sPin = 3;
 const int vPinA = 24, vPinB = 5, vPinC = 4;
 extern bool prev_victim;
 
+const int blackThresh = 70;
 
 void lMotorEncInterrupt();
 void rMotorEncInterrupt();
