@@ -109,6 +109,7 @@ void begin(){
   x.attach(servPin);
   x.write(90);
   x.detach();
+  _comm->writeSerial("RESET");
   delay(2000);
 }
 void readSensors(){//read all sensors
@@ -159,6 +160,8 @@ void readTile(){//read Tile data and send to PI
   else
     walls+="0";
    checkVictim();
+   if(light > silverThresh)
+    walls += " CHECKPOINT";
   _comm->writeSerial(walls);
    checkVictim();
    delay(5);
