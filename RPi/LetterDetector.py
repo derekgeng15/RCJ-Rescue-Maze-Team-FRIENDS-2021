@@ -24,13 +24,14 @@ def areaFilter(img, maxArea=400):
     
     return img
 
-def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT):
+def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
     """
     Return the rotated and scaled image. 
     By default the border_mode arg is BORDER_CONSTANT
     """
     (h, w) = i.shape[:2]
-    print ("h:{0}  w:{1}".format(h,w))
+    if printOn:
+        print ("h:{0}  w:{1}".format(h,w))
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, scale)
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
@@ -55,17 +56,9 @@ def cuts(img, direction, height, width, value = 0):
 
 # Fixes angle of HSU given the image, the contour analyzed, and the index of contour
 def fixContourAngle(img, c, showFrame=True):
-    x,y,w,h = cv2.boundingRect(c)
-    if x>5:
-        x -= 5
-    if y>5:
-        y -= 5
-    w += 10
-    h += 10
-    sliced = img[y:y+h, x:x+w]
     angle = cv2.minAreaRect(c)[-1]
     print("Angle:", angle)
-    fixedImg = RotateImage(img, angle, 1.0)
+    fixedImg = RotateImage(img, angle, 1.0, printOn=False)
     if showFrame:
         cv2.imshow("Rotated", fixedImg)
     return fixedImg
