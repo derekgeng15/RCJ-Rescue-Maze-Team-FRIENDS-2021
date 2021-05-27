@@ -67,7 +67,7 @@ def fixContourAngle(img, c, showFrame=True):
     print("Angle:", angle)
     fixedImg = RotateImage(img, angle, 1.0)
     if showFrame:
-        cv2.imshow("Rotated Thresh", fixedImg)
+        cv2.imshow("Rotated", fixedImg)
     return fixedImg
 
 #------------------------------------------------------------------------------------------------------
@@ -130,13 +130,10 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             c = max(contours, key = cv2.contourArea) # Give the largest contour
 
             #GETTING BOUNDING RECTANGLE
-            #rect = cv2.minAreaRect(c)
             rect = cv2.boundingRect(c)
             x,y,w,h = rect
             '''cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2) # draw the book contour (in green)
             cv2.imshow("Thresh", thresh)'''
-            #(x,y) = rect[0]
-            #(w, h) = rect[1]
             angle = 0 #cv2.minAreaRect(c)[-1]
             #print("Angle:", angle)
             #cropped = thresh[max(y-10,0):min(y+h+10,height), max(x-10,0):min(x+w+10, width)]
@@ -171,6 +168,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             cv2.imwrite("RPi/HSU Stuff/H-Mid.jpg", mid)
             cv2.imwrite("RPi/HSU Stuff/H-Bot.jpg", bot)'''
 
+            # Filter again (get rid of random micro-contours)
             areaFilter(top, maxArea=40)
             areaFilter(mid, maxArea=40)
             areaFilter(bot, maxArea=40)
