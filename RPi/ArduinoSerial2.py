@@ -7,8 +7,8 @@ import math
 import struct
 import numpy as np
 import cv2
-from LetterDetector import *
 from ColorDetector import *
+from LetterDetector import *
 import RPi.GPIO as GPIO
 
 def clearFile():
