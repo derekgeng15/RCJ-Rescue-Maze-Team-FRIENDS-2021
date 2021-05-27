@@ -174,10 +174,11 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             areaFilter(top, maxArea=40)
             areaFilter(mid, maxArea=40)
             areaFilter(bot, maxArea=40)
-        
-            cv2.imshow("top", top)
-            cv2.imshow("mid", mid)
-            cv2.imshow("bot", bot)
+
+            if showFrame:
+                cv2.imshow("top", top)
+                cv2.imshow("mid", mid)
+                cv2.imshow("bot", bot)
 
             #CONTOURS FOR HSU DETECTION
             (contop, h) = cv2.findContours(top.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
