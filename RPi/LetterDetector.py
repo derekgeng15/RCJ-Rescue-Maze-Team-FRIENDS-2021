@@ -77,7 +77,7 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     gray = cuts(gray, direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 90, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)[1]
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
     
     return gbr
@@ -114,7 +114,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>1850 and cv2.contourArea(c) < 5700):
+        if(cv2.contourArea(c)>1200 and cv2.contourArea(c) < 10000):
 
             # Fix angle of contour
             areaFilteredCopy = fixContourAngle(areaFilteredCopy, c, showFrame=True)
@@ -162,9 +162,9 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             cv2.imwrite("RPi/HSU Stuff/H-Bot.jpg", bot)'''
 
             # Filter again (get rid of random micro-contours)
-            areaFilter(top, maxArea=40)
-            areaFilter(mid, maxArea=40)
-            areaFilter(bot, maxArea=40)
+            areaFilter(top, maxArea=30)
+            areaFilter(mid, maxArea=30)
+            areaFilter(bot, maxArea=30)
 
             if showFrame:
                 cv2.imshow("top", top)

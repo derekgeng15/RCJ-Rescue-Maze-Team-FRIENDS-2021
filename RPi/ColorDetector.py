@@ -140,9 +140,9 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     #thresh += 20
     #print(img[height//2 + 20][width//2 + 20])
-    areaFilterMin = 1200
-    areaFilterMax = 10000
-    hwRatio = 1.65
+    areaFilterMin = 1000
+    areaFilterMax = 458483098410923840
+    hwRatio = 1.75
 
     # Filtering for Yellow
     yellowFilter = np.zeros((height, width), dtype="uint8")

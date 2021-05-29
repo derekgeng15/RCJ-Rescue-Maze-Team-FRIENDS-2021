@@ -99,12 +99,13 @@ while True:
         # Display the resulting frame
         #cv2.imshow('Camera1',frame)
         #cv2.imwrite("imgs/Camera1 - Left" + str(frameCount) + ".png", frameL)
+        #cv2.imwrite("imgs/Camera1 - Right" + str(frameCount) + ".png", frameR)
 
         # Increasing frameCount
         frameCount += 1
 
         # Double Detection Buffer
-        if last_seen_frame + 10 >= frameCount:
+        if last_seen_frame + 15 >= frameCount:
             continue
         
         # Victim Detection with Left Camera
@@ -115,7 +116,8 @@ while True:
         if victimL!=None:
             print("Saw Left Cam:", victimL, "at frame -", frameCount)
             if writeFrames:
-                cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
+                #cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
+                pass
         else:
             pass
             #print("Saw Nothing Left Cam! -", frameCount)
@@ -128,7 +130,8 @@ while True:
         if victimR!=None:
             print("Saw Right Cam:", victimR, "at frame -", frameCount)
             if writeFrames:
-                cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
+                #cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
+                pass
         else:
             pass
             #print("Saw Nothing Right Cam! -", frameCount)
@@ -137,18 +140,22 @@ while True:
         if victimL=="H" or victimL=="U":
             letterBufferL.append(victimL)
             letterBufferL.pop(0)
-        letterBufferL.append(victimL)
-        letterBufferL.pop(0)
+        if victimL!="S":
+            letterBufferL.append(victimL)
+            letterBufferL.pop(0)
         if victimR=="H" or victimR=="U":
             letterBufferR.append(victimR)
             letterBufferR.pop(0)
-        letterBufferR.append(victimR)
-        letterBufferR.pop(0)
+        if victimR!="S":
+            letterBufferR.append(victimR)
+            letterBufferR.pop(0)
         #letterBufferL.sort()
         #letterBufferR.sort()
 
         if letterBufferL[0] != None and (letterBufferL[0]==letterBufferL[1]):
             print("\n Found Left Victim!")
+            if letterBufferL == "S":
+                continue
             COMM.sendVictim(victimL, "left")
             last_seen_frame = frameCount
             # if writeFrames:
@@ -157,6 +164,8 @@ while True:
 
         elif letterBufferR[0] != None and (letterBufferR[0]==letterBufferR[1]):
             print("\n Found Right Victim")
+            if letterBufferR == "S":
+                continue
             COMM.sendVictim(victimR, "right")
             last_seen_frame = frameCount
             # if writeFrames:

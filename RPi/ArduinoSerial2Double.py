@@ -104,7 +104,7 @@ while True:
         frameCount += 1
 
         # Double Detection Buffer
-        if last_seen_frame + 10 >= frameCount:
+        if last_seen_frame + 20 >= frameCount:
             continue
         
         # Victim Detection with Left Camera
@@ -117,8 +117,7 @@ while True:
             if writeFrames:
                 cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
         else:
-            pass
-            #print("Saw Nothing Left Cam! -", frameCount)
+            print("Saw Nothing Left Cam! -", frameCount)
 
         # Victim Detection with Right Camera
         victimR = getColorVictimVectorized(frameR, direction="right", showFrame=False)
@@ -130,18 +129,11 @@ while True:
             if writeFrames:
                 cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
         else:
-            pass
-            #print("Saw Nothing Right Cam! -", frameCount)
+            print("Saw Nothing Right Cam! -", frameCount)
         
         # Updating Letter Buffer
-        if victimL=="H" or victimL=="U":
-            letterBufferL.append(victimL)
-            letterBufferL.pop(0)
         letterBufferL.append(victimL)
         letterBufferL.pop(0)
-        if victimR=="H" or victimR=="U":
-            letterBufferR.append(victimR)
-            letterBufferR.pop(0)
         letterBufferR.append(victimR)
         letterBufferR.pop(0)
         #letterBufferL.sort()
