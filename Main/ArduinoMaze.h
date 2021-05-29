@@ -44,7 +44,7 @@ const int sPin = 3;
 const int vPinA = 5, vPinB = 24, vPinC = 4;
 extern bool prev_victim;
 
-const int blackThresh = 375;
+const int blackThresh = 350;
 const int silverThresh = 10000;
 
 void lMotorEncInterrupt();

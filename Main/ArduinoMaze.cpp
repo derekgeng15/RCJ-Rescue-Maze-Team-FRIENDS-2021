@@ -25,7 +25,7 @@ void rightServo() {
   x.write(80);
   delay(1000);
   x.write(90);
-  delay(1000);
+  delay(1000); 
   x.detach();
 }
 
@@ -116,7 +116,7 @@ void begin(){
 void readSensors(){//read all sensors
   _chassis->readChassis();
   light = analogRead(A7);
-  Serial.println(light);
+//  Serial.println(lisght);
   // _laser->readAll();  
 }
 void print(){
@@ -196,7 +196,7 @@ void checkVictim() {
         int side = digitalRead(vPinC);
         _laser->readAll();
         _laser->print();
-        if(step >= path.length()- 1) {
+        if(step >= path.length()- 1 || step == 0) {
           _chassis->resetR();
           if((_laser->getDist(3)<200 && side == 1)) {
             _chassis->runMotors(0);
@@ -255,10 +255,10 @@ bool followPath(){//TODO: Add state machine for following
        * if see black, call ai blackout(rPI serial)
        * 
        */
-  if(path.length()>1) {
-    if(light < blackThresh && fstate != FSTATE::BLACKTILE)
+  if(step == path.length() - 1) {
+    if(light <= blackThresh && fstate != FSTATE::BLACKTILE)
         blackcount++;
-    if(blackcount > 30) {
+    if(blackcount >= 20) {
       fstate = FSTATE::BLACKTILE;
       blackcount = 0;
     }
@@ -278,7 +278,7 @@ bool followPath(){//TODO: Add state machine for following
       if(therm1.read()) {
 //        Serial.print(" Temp 1: ");
 //        Serial.println(String(therm1.object(), 2));
-        if(therm1.object()>80 && !prev_victim) {
+        if(therm1.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
           Serial.println(therm1.object());
 
           Serial.println("SAW HEAT\n");
@@ -292,14 +292,33 @@ bool followPath(){//TODO: Add state machine for following
           prev_victim = true;
         }
       }
+      if(therm2.read()) {
+//        Serial.print(" Temp 1: ");
+//        Serial.println(String(therm1.object(), 2));
+        if(therm2.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
+          Serial.println(therm2.object());
+
+          Serial.println("SAW HEAT\n");
+          _chassis->resetR();
+          _chassis->runMotors(0);
+          
+          digitalWrite(9, HIGH);
+          rightServo();
+          delay(5000);
+          digitalWrite(9, LOW);
+          prev_victim = true;
+        }
+      }
       //Serial.print(millis()-myTime);
       //Serial.print(" ");
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
         currDir = (currDir + getDir(path[step]))%4;
         _laser->readAll();
         angAdj = 0;
-        double fe = TILE_SIZE + 40;
-        if(min(_laser->getDist(0), _laser->getDist(1)) < 450){
+        //self-correction
+        double fe = TILE_SIZE + 45;
+//        Serial.println(abs(_chassis->getPitch() - 5) * 180 / PI));
+        if(min(_laser->getDist(0), _laser->getDist(1)) < 450 && abs(_chassis->getPitch()* 180 / PI - 5)  <= 10){
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE);
             if(fe > 150)
               fe -= 300;
@@ -335,7 +354,7 @@ bool followPath(){//TODO: Add state machine for following
 //        Serial.println("Failed therm");
 //      }
         if(therm1.read()) {
-          if(therm1.object()>80 && !prev_victim) {
+          if(therm1.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
             Serial.println(therm1.object());
             Serial.println("SAW HEAT\n");
             _chassis->resetR();
@@ -348,8 +367,22 @@ bool followPath(){//TODO: Add state machine for following
           }
           
         }
-      else {
-       Serial.println("Failed therm 1");
+        if(therm2.read()) {
+//        Serial.print(" Temp 1: ");
+//        Serial.println(String(therm1.object(), 2));
+          if(therm2.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
+            Serial.println(therm2.object());
+  
+            Serial.println("SAW HEAT\n");
+            _chassis->resetR();
+            _chassis->runMotors(0);
+            
+            digitalWrite(9, HIGH);
+            rightServo();
+            delay(5000);
+            digitalWrite(9, LOW);
+            prev_victim = true;
+          }
       }
      // Serial.print(millis()-myTime);
      // Serial.print(" ");
@@ -361,6 +394,7 @@ bool followPath(){//TODO: Add state machine for following
     case FSTATE::FORADJ:{
       if(_chassis->turnTo(ang[currDir])){
         fstate = CALC;
+        blackcount = 0;
         step = skip;
         _chassis->reset();
         if(step == path.length())
@@ -370,7 +404,7 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::BLACKTILE:{
       Serial.println("BLACKOUT");
-      if(_chassis->goMm(0)){
+      if(_chassis->goMm(-10 * encPerMm)){
         return true;
       }
       break;

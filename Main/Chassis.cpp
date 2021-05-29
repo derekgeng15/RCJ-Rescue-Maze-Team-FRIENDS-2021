@@ -27,6 +27,9 @@ void Chassis::init(){
 double Chassis::getYaw(){
   return yaw;
 }
+double Chassis::getPitch(){
+  return pitch;
+}
 int Chassis::getlEncCt(){
   return lEncCt;
 }
@@ -53,7 +56,7 @@ void Chassis::updREnc(){
 }
 
 bool Chassis::turnTo(double deg){
-  static double kP = 3;
+  static double kP = 1.0;
   static double totalErr = 0;
   double kI = 0.0075;
   double error = deg - (yaw * 180 / PI);
@@ -91,48 +94,10 @@ bool Chassis::turnTo(double deg){
   }
 }
 
-//bool Chassis::turnVic(double deg){
-//  static double kP = 3;
-//  static double totalErr = 0;
-//  double kI = 0.005;
-//  double error = deg - (yaw * 180 / PI);
-//  if(error > 180)
-//    error = 360 - error;
-//  else if(error < -180)
-//    error += 360;
-//  if(abs(error) < 90) 
-//   totalErr+=error;
-//  if(error * kP + (totalErr*kI) < 0) {
-//     lSpeed = min(error * kP + (totalErr*kI), -20);
-//     rSpeed = min(error * kP + (totalErr*kI), -20);
-//  }
-//  else {
-//    lSpeed = max(error * kP + (totalErr*kI), 20);
-//    rSpeed = max(error * kP + (totalErr*kI), 20);
-//  }
-//  
-//  if(abs(error) > 1){
-//    _rMotor.run(lSpeed);
-//    _lMotor.run(rSpeed);
-//    counter++;
-//    return false;
-//  }
-//  else{
-//    Serial.println("Done Turning");
-//    Serial.print("TURN COUNT: ");
-//    Serial.println(counter);
-//    _rMotor.run(0);
-//    _lMotor.run(0);
-//    totalErr = 0;
-//    counter=0;
-//    return true;
-//  }
-//}
-
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 0.4;
+  static double kP = 0.2;
   static double kD = 0;
   double kI = 0.0004;
   double speed;
@@ -190,6 +155,7 @@ void Chassis::readChassis(){
   sensors_event_t imuData;
   _imu.getEvent(&imuData, Adafruit_BNO055::VECTOR_EULER);
   yaw =  imuData.orientation.x * PI / 180;
+  pitch = imuData.orientation.z * PI / 180;
 }
 void Chassis::print(){
   Serial.print("lmm: ");
@@ -198,6 +164,8 @@ void Chassis::print(){
   Serial.print(rEncCt );
   Serial.print(" Yaw: ");
   Serial.println(yaw * 180 / PI);
+  Serial.print("pitch: ");
+  Serial.println(pitch * 180 / PI);
 }
 
 void Chassis::runMotors(double power) {

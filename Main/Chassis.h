@@ -21,13 +21,14 @@ class Chassis{
     
     Adafruit_BNO055 _imu;
     
-    double yaw;
+    double yaw, pitch;
     int plEncCt, lEncCt;
     int prEncCt, rEncCt;
   public:
     Chassis();
     void init();
     double getYaw();
+    double getPitch();
     int getlEncCt();
     int getrEncCt();
     uint8_t getREncInt();
@@ -35,7 +36,6 @@ class Chassis{
     void updLEnc();
     void updREnc();
     bool turnTo(double deg);
-    bool turnVic(double deg);
     bool goMm(double mm);
     void reset();
     void readChassis();
