@@ -16,6 +16,7 @@ double forward, angAdj;
 String path;
 int step, skip;
 int light;
+int blackcount = 0;
 
 void rightServo() {
   x.attach(servPin);
@@ -91,12 +92,12 @@ void begin(){
     Serial.println("Qwiic IR thermometer 1 did not acknowledge! Running I2C scanner.");
     while(1);
   }
-//  if (therm2.begin(0x5b) == false) {
-//    Serial.println("Qwiic IR thermometer 2 did not acknowledge! Running I2C scanner.");
-//    while(1);
-//  }
+  if (therm2.begin(0x5b) == false) {
+    Serial.println("Qwiic IR thermometer 2 did not acknowledge! Running I2C scanner.");
+    while(1);
+  }
   therm1.setUnit(TEMP_F);
-//  therm2.setUnit(TEMP_F);
+  therm2.setUnit(TEMP_F);
   Serial.println("Finished therms");
   pinMode(sPin, INPUT_PULLUP);
   pinMode(vPinA, INPUT);
@@ -109,12 +110,13 @@ void begin(){
   x.attach(servPin);
   x.write(90);
   x.detach();
-  _comm->writeSerial("RESET");
+  //_comm->writeSerial("RESET");
   delay(2000);
 }
 void readSensors(){//read all sensors
   _chassis->readChassis();
   light = analogRead(A7);
+  Serial.println(light);
   // _laser->readAll();  
 }
 void print(){
@@ -253,8 +255,14 @@ bool followPath(){//TODO: Add state machine for following
        * if see black, call ai blackout(rPI serial)
        * 
        */
-  if(light > blackThresh && fstate != FSTATE::BLACKTILE)
+  if(path.length()>1) {
+    if(light < blackThresh && fstate != FSTATE::BLACKTILE)
+        blackcount++;
+    if(blackcount > 30) {
       fstate = FSTATE::BLACKTILE;
+      blackcount = 0;
+    }
+  }
   
   //readSensors();
   switch(fstate){
@@ -290,7 +298,7 @@ bool followPath(){//TODO: Add state machine for following
         currDir = (currDir + getDir(path[step]))%4;
         _laser->readAll();
         angAdj = 0;
-        double fe = TILE_SIZE + 30;
+        double fe = TILE_SIZE + 40;
         if(min(_laser->getDist(0), _laser->getDist(1)) < 450){
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE);
             if(fe > 150)
@@ -361,6 +369,7 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::BLACKTILE:{
+      Serial.println("BLACKOUT");
       if(_chassis->goMm(0)){
         return true;
       }

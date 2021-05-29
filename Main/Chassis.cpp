@@ -134,7 +134,7 @@ double rTotalErr = 0;
 bool Chassis::goMm(double mm){
   static double kP = 0.4;
   static double kD = 0;
-  double kI = 0.00025;
+  double kI = 0.0004;
   double speed;
   //Serial.println(lEncCt);
   lTotalErr+=(encPerMm * mm - lEncCt);

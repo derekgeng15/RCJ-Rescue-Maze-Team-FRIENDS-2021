@@ -36,15 +36,16 @@ extern SA *_comm;
 
 extern String path;
 extern int step, skip;
+extern int blackcount;
 
 extern volatile bool victim;
 
 const int sPin = 3;
-const int vPinA = 24, vPinB = 5, vPinC = 4;
+const int vPinA = 5, vPinB = 24, vPinC = 4;
 extern bool prev_victim;
 
-const int blackThresh = 70;
-const int silverThresh = 2048;
+const int blackThresh = 375;
+const int silverThresh = 10000;
 
 void lMotorEncInterrupt();
 void rMotorEncInterrupt();
