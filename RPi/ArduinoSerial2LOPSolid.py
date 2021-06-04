@@ -21,8 +21,9 @@ def clearFile():
 clearFile()
 
 # Camera Stuff
-capL = cv2.VideoCapture(1) # Left
+#capL = cv2.VideoCapture(1) # Left
 capR = cv2.VideoCapture(0) # Right
+capL = capR
 capL.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 capL.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 capL.set(cv2.CAP_PROP_FPS,30)
@@ -111,7 +112,7 @@ while True:
             frameCount += 1
 
             # Double Detection Buffer
-            if last_seen_frame + 15 >= frameCount:
+            if last_seen_frame + 20 >= frameCount:
                 continue
             
             # Victim Detection with Left Camera
@@ -146,38 +147,33 @@ while True:
             if victimL=="H" or victimL=="U":
                 letterBufferL.append(victimL)
                 letterBufferL.pop(0)
-            if victimL!="S":
-                letterBufferL.append(victimL)
-                letterBufferL.pop(0)
+            letterBufferL.append(victimL)
+            letterBufferL.pop(0)
             if victimR=="H" or victimR=="U":
                 letterBufferR.append(victimR)
                 letterBufferR.pop(0)
-            if victimR!="S":
-                letterBufferR.append(victimR)
-                letterBufferR.pop(0)
+            letterBufferR.append(victimR)
+            letterBufferR.pop(0)
             #letterBufferL.sort()
             #letterBufferR.sort()
 
             if letterBufferL[0] != None and (letterBufferL[0]==letterBufferL[1]):
                 print("\n Found Left Victim!")
-                if letterBufferL == "S":
-                    continue
                 COMM.sendVictim(victimL, "left")
                 last_seen_frame = frameCount
-                # if writeFrames:
-                #     cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
+                if writeFrames:
+                    cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
                 break
 
             elif letterBufferR[0] != None and (letterBufferR[0]==letterBufferR[1]):
                 print("\n Found Right Victim")
-                if letterBufferR == "S":
-                    continue
                 COMM.sendVictim(victimR, "right")
                 last_seen_frame = frameCount
-                # if writeFrames:
-                #     cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
+                if writeFrames:
+                    cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
                 break
     print("\n\n\n=====RESETTING PROGRAM=====\n\n\n")
 capL.release()
 capR.release()
+
 

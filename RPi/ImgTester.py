@@ -10,9 +10,9 @@ from LetterDetector import *
 #frame = cv2.imread("img-tests/Nothing-test3.png")
 #frame = cv2.imread("Camera1 - 5.png")
 #frame = cv2.imread("H-sideways-small.jpg")
-frame = cv2.imread("imgs/Camera1 - Left64.png")
+#frame = cv2.imread("imgs/Camera1 - Left64.png")
 #frame = cv2.imread("imgs/Camera1 - Right9.png")
-#frame = cv2.imread("imgs/Camera1 Left - 354.png")
+frame = cv2.imread("imgs/Camera1 Left - 15.png")
 #frame = cv2.imread("imgs/Camera1 Right - 9.png")
 cv2.imshow("frame", frame)
 

@@ -73,14 +73,27 @@ hwRatio = 1.7
 def getLetter(img, direction="right", showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     global height, width, depth
     (height, width, depth) = img.shape
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cuts(gray, direction, height, width, 255)
+    uncut_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cuts(uncut_gray.copy(), direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(blurred, 75, 255, cv2.THRESH_BINARY)[1]
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
     
-    return gbr
+    #return gbr
+    
+    if gbr=="S":
+        blurred = cv2.bilateralFilter(uncut_gray.copy(), 5, 15, 15)
+        method = {"mean": cv2.ADAPTIVE_THRESH_MEAN_C, "gaus": cv2.ADAPTIVE_THRESH_GAUSSIAN_C}
+        thresh = cv2.adaptiveThreshold(uncut_gray.copy(), 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
+        bfr = processLetter(thresh, showFrame, frameCounting, frameCount)
+        if bfr == gbr:
+            return "S"
+        else:
+            return None
+        
+    else:
+        return gbr
 
 def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     #Cutting to get rid of treads and stuff
@@ -114,12 +127,14 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>1200 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>900 and cv2.contourArea(c) < 10000):
 
             # Fix angle of contour
             areaFilteredCopy = fixContourAngle(areaFilteredCopy, c, showFrame=True)
             areaFilteredCopy = areaFilter(areaFilteredCopy)
             contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
+            if len(contours)==0:
+                return None
             c = max(contours, key = cv2.contourArea) # Give the largest contour
 
             #GETTING BOUNDING RECTANGLE
@@ -187,6 +202,8 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             else:
                 return None
         else:
-            cv2.drawContours(thresh, contours, i, (0,0,0), cv2.FILLED)
+            #cv2.drawContours(thresh, contours, i, (0,0,0), cv2.FILLED)
+            for k in range(len(contours)):
+                cv2.drawContours(thresh, [contours[k]], 0, (0,0,0), cv2.FILLED)
 
     return None

@@ -118,6 +118,8 @@ def getColorVictimVectorized(img, showFrame=True, frameCounting=False, frameCoun
 # Using BGR Numpy filtering
 def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounting=False, frameCount=1):
     #return None
+    '''if img == None:
+        return None'''
     (height, width, depth) = img.shape # BGR Image
     #print("img Shape:", img.shape)
 
