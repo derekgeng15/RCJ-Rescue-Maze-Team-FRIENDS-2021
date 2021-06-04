@@ -21,9 +21,8 @@ def clearFile():
 clearFile()
 
 # Camera Stuff
-#capL = cv2.VideoCapture(1) # Left
+capL = cv2.VideoCapture(1) # Left
 capR = cv2.VideoCapture(0) # Right
-capL = capR
 capL.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 capL.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 capL.set(cv2.CAP_PROP_FPS,30)
@@ -103,13 +102,13 @@ while True:
             ret, frameR = capR.read() 
             writeFrames = True
 
+            # Increasing frameCount
+            frameCount += 1
+
             # Display the resulting frame
             #cv2.imshow('Camera1',frame)
             #cv2.imwrite("imgs/Camera1 - Left" + str(frameCount) + ".png", frameL)
             #cv2.imwrite("imgs/Camera1 - Right" + str(frameCount) + ".png", frameR)
-
-            # Increasing frameCount
-            frameCount += 1
 
             # Double Detection Buffer
             if last_seen_frame + 20 >= frameCount:
@@ -123,7 +122,7 @@ while True:
             if victimL!=None:
                 print("Saw Left Cam:", victimL, "at frame -", frameCount)
                 if writeFrames:
-                    #cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
+                    #cv2.imwrite("imgs/Camera1 Left (V) - " + str(frameCount) + ".png", frameL)
                     pass
             else:
                 pass
@@ -137,7 +136,7 @@ while True:
             if victimR!=None:
                 print("Saw Right Cam:", victimR, "at frame -", frameCount)
                 if writeFrames:
-                    #cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
+                    #cv2.imwrite("imgs/Camera1 Right (V) - " + str(frameCount) + ".png", frameR)
                     pass
             else:
                 pass
