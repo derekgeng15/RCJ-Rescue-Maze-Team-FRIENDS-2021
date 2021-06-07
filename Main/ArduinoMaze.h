@@ -17,8 +17,12 @@
 #define TILE_SIZE 300
 
 enum FSTATE {
-  CALC, TURNING, TURNADJ, FORWARD, FORADJ, BLACKTILE
+  CALC, TURNING, TURNADJ, FORWARD, FORADJ, BLACKTILE, OBSTACLE
 }extern fstate;
+
+enum OSTATE{
+  BACKWARDS, TURN, PARK, ADJ
+}extern ostate;
 
 enum DIRECTION{
   UP, RIGHT, DOWN, LEFT
@@ -26,7 +30,7 @@ enum DIRECTION{
 
 const double ang[] = {0, 90, 180, -90};
 
-const int servPin = 2;
+const int servPin = A6;
 
 extern double forward, angAdj;
 
@@ -41,9 +45,13 @@ extern int blackcount;
 extern volatile bool victim;
 
 const int sPin = 3;
-const int vPinA = 5, vPinB = 24, vPinC = 4;
+const int vPinA = 2, vPinB = 5, vPinC = 4, vPinD = 6;
 extern bool prev_victim;
 
+const int lObPin = 22;
+const int rObPin = 23;
+extern bool lOb, rOb;
+extern int lObCt, rObCt;
 const int blackThresh = 350;
 const int silverThresh = 10000;
 

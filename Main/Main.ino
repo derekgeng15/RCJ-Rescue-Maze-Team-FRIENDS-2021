@@ -11,7 +11,7 @@ void test(String p){
   if(followPath()){
       Serial.print("DONE");
       while(1);
-  }
+  } 
 }
 
 void setup()

@@ -97,9 +97,9 @@ bool Chassis::turnTo(double deg){
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 0.2;
+  static double kP = 0.25;
   static double kD = 0;
-  double kI = 0.0004;
+  double kI = 0.001;
   double speed;
   //Serial.println(lEncCt);
   lTotalErr+=(encPerMm * mm - lEncCt);

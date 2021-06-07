@@ -1,6 +1,7 @@
 #include "ArduinoMaze.h"
 
 FSTATE fstate = CALC;
+OSTATE ostate = BACKWARDS;
 DIRECTION currDir;
 
 Chassis *_chassis;
@@ -10,6 +11,10 @@ IRTherm therm1;
 IRTherm therm2;
 Servo x;
 
+double oang;
+
+bool lOb, rOb;
+int lObCt = 0, rObCt = 0;
 
 double threshold = 200;
 double forward, angAdj;
@@ -104,20 +109,28 @@ void begin(){
   pinMode(vPinB, INPUT);
   pinMode(vPinC, INPUT);
   pinMode(9, OUTPUT);
+
+  pinMode(lObPin, INPUT_PULLUP);
+  pinMode(rObPin, INPUT_PULLUP);
+
+  
+  
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, FALLING);
   x.attach(servPin);
   x.write(90);
   x.detach();
-  //_comm->writeSerial("RESET");
+  _comm->writeSerial("RESET");
   delay(2000);
 }
 void readSensors(){//read all sensors
   _chassis->readChassis();
   light = analogRead(A7);
+  lOb = digitalRead(lObPin);
+  rOb = digitalRead(rObPin);
 //  Serial.println(lisght);
-  // _laser->readAll();  
+   _laser->readAll();  
 }
 void print(){
   Serial.println("--------------------");
@@ -140,7 +153,7 @@ void readTile(){//read Tile data and send to PI
   // }
   _laser->readAll();
   _laser->print();
-  if(_laser->getDist(1) < threshold || _laser->getDist(0) < threshold ) {
+  if(_laser->getDist(1) < threshold && _laser->getDist(0) < threshold ) {
     walls+="1";
     Serial.println("First Sensor Seen");
   }
@@ -180,6 +193,41 @@ void getPath(){//get BFS path from PI
   }
   step = 0;
   fstate = CALC;
+}
+
+bool obstacle(){
+  switch(ostate){
+    case OSTATE::BACKWARDS:{
+      if(_chassis->goMm(0)){
+        ostate = OSTATE::TURN;
+      }
+      break;
+    }
+    case OSTATE::TURN:{
+      if(_chassis->turnTo(oang)){
+        ostate = OSTATE::PARK;
+        _chassis->reset();
+      }
+      break;
+    }
+    case OSTATE::PARK:{
+      if(_chassis->goMm(-30 * sqrt(2))){
+        ostate = ADJ;
+      }
+      break;
+    }
+    case OSTATE::ADJ:{
+      if(_chassis->turnTo(ang[currDir])){
+        _chassis->reset();
+        forward = 400;
+        ostate = BACKWARDS;
+        return true;
+      }
+      break;
+    }
+  }
+
+  return false;
 }
 
 void checkVictim() {
@@ -263,6 +311,27 @@ bool followPath(){//TODO: Add state machine for following
       blackcount = 0;
     }
   }
+
+  (rObCt += rOb) *= rOb;
+  (lObCt += lOb) *= lOb;
+      
+  
+  if(rObCt > 30 && fstate == FSTATE::FORWARD){
+    if(ang[currDir] + 45 < 0)
+        oang = ang[currDir] + 45 + 360;
+      else 
+        oang = fmod(ang[currDir] + 45, 360);
+      ostate = OSTATE::BACKWARDS;
+      fstate = FSTATE::OBSTACLE;
+  }
+  if(lObCt > 30 && fstate == FSTATE::FORWARD){
+      if(ang[currDir] - 45 < 0)
+        oang = ang[currDir] - 45 + 360;
+      else 
+        oang = fmod(ang[currDir] - 45, 360);
+      ostate = OSTATE::BACKWARDS;
+      fstate = FSTATE::OBSTACLE;
+  }
   
   //readSensors();
   switch(fstate){
@@ -316,13 +385,13 @@ bool followPath(){//TODO: Add state machine for following
         _laser->readAll();
         angAdj = 0;
         //self-correction
-        double fe = TILE_SIZE + 45;
+        double fe = TILE_SIZE + 40;
 //        Serial.println(abs(_chassis->getPitch() - 5) * 180 / PI));
-        if(min(_laser->getDist(0), _laser->getDist(1)) < 450 && abs(_chassis->getPitch()* 180 / PI - 5)  <= 10){
+        if(min(_laser->getDist(0), _laser->getDist(1)) < 500 && abs(_chassis->getPitch()* 180 / PI - 5)  <= 10){
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE);
             if(fe > 150)
               fe -= 300;
-            fe += (TILE_SIZE)/2 + 120;
+            fe += (TILE_SIZE)/2 + 90;
         }
         if(_laser->getDist(2) < TILE_SIZE)
             angAdj =  -atan2(_laser->getDist(2) - TILE_SIZE/2 + 44, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
@@ -386,7 +455,7 @@ bool followPath(){//TODO: Add state machine for following
       }
      // Serial.print(millis()-myTime);
      // Serial.print(" ");
-      if(_chassis->goMm(forward)){
+      if(_chassis->goMm(forward) || _laser->getDist(0) <= 60){
         fstate = FORADJ;
       }
       break;
@@ -400,6 +469,11 @@ bool followPath(){//TODO: Add state machine for following
         if(step == path.length())
           return true;
       }
+      break;
+    }
+    case FSTATE::OBSTACLE:{
+      if(obstacle())
+        fstate = FORWARD;
       break;
     }
     case FSTATE::BLACKTILE:{
