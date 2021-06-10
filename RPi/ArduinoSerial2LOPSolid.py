@@ -21,8 +21,8 @@ def clearFile():
 clearFile()
 
 # Camera Stuff
-capL = cv2.VideoCapture(1) # Left
-capR = cv2.VideoCapture(0) # Right
+capL = cv2.VideoCapture(0) # Left
+capR = cv2.VideoCapture(1) # Right
 capL.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 capL.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 capL.set(cv2.CAP_PROP_FPS,30)

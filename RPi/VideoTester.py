@@ -3,8 +3,8 @@ import cv2
 from ColorDetector import *
 from LetterDetector import *
 
-#cap = cv2.VideoCapture(0) # Right - 0 | MAKE SURE THE VICTIM DETECTION FUNCTIONS REFLECT THE DIRECTION
-cap = cv2.VideoCapture(1) # Left - 1
+#cap = cv2.VideoCapture(0) # Left - 0 | MAKE SURE THE VICTIM DETECTION FUNCTIONS REFLECT THE DIRECTION
+cap = cv2.VideoCapture(1) # Right - 1
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320) # 320
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240) # 240
 cap.set(cv2.CAP_PROP_FPS,30)

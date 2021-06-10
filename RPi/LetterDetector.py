@@ -37,21 +37,21 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
 def cuts(img, direction, height, width, value = 0):
-    LRCUT = 35
-    TBCUT = 15
-    modifier = 55
+    LRCUT = 15
+    TBCUT = 27
+    modifier = 25
     if direction=="left":
-        img[:, 0:LRCUT+modifier] = value # Cut more left of the image
+        img[0:TBCUT+modifier, :] = value # Cut more left of the image
     else:
-        img[:, 0:LRCUT] = value
+        img[0:TBCUT, :] = value
     
     if direction=="right":
-        img[:, width-LRCUT-modifier:width] = value
+        img[height-TBCUT-modifier:height, :] = value
     else:
-        img[:, width-LRCUT:width] = value
+        img[height-TBCUT:height, :] = value
         
-    img[0:TBCUT, :] = value
-    img[height-TBCUT:height, :] = value
+    img[:, 0:LRCUT] = value
+    img[:, width-LRCUT:width] = value
     return img
 
 # Fixes angle of HSU given the image, the contour analyzed, and the index of contour
