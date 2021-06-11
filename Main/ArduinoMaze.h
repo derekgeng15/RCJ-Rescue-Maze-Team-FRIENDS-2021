@@ -1,6 +1,7 @@
 
 #include <Wire.h>
 #include <SparkFunMLX90614.h>
+#include <Adafruit_TCS34725.h>
 
 #include <Arduino.h>
 #include <math.h>
@@ -15,6 +16,8 @@
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 #define TILE_SIZE 300
+
+#define MUX 0x70
 
 enum FSTATE {
   CALC, TURNING, TURNADJ, FORWARD, FORADJ, BLACKTILE, OBSTACLE
@@ -36,6 +39,7 @@ extern double forward, angAdj;
 
 extern Chassis *_chassis;
 extern LaserSystem *_laser;
+extern Adafruit_TCS34725 *_color;
 extern SA *_comm;
 
 extern String path;
@@ -45,7 +49,7 @@ extern int blackcount;
 extern volatile bool victim;
 
 const int sPin = 3;
-const int vPinA = 2, vPinB = 5, vPinC = 4, vPinD = 6;
+const int vPinA = 5, vPinB = 2, vPinC = 4, vPinD = 6;
 extern bool prev_victim;
 
 const int lObPin = 22;
@@ -70,3 +74,4 @@ void checkVictim();
 void prevFunc();
 void leftServo();
 void rightServo();
+int selPort(int i);

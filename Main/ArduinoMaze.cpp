@@ -6,6 +6,7 @@ DIRECTION currDir;
 
 Chassis *_chassis;
 LaserSystem *_laser;
+Adafruit_TCS34725 *_color;
 SA *_comm;
 IRTherm therm1;
 IRTherm therm2;
@@ -20,9 +21,17 @@ double threshold = 200;
 double forward, angAdj;
 String path;
 int step, skip;
-int light;
+uint16_t light;
 int blackcount = 0;
 
+int selPort(int i){
+    if(i > 7)
+      return 4;
+     Wire.beginTransmission(MUX);
+     Wire.write(1 << i);
+     Wire.endTransmission();
+
+}
 void rightServo() {
   x.attach(servPin);
   x.write(135);
@@ -81,23 +90,34 @@ void prevFunc() {
 }
 
 void begin(){
-  _chassis = new Chassis();
-  _laser = new LaserSystem();
-  _comm = new SA();
   Serial.begin(115200);
   Serial2.begin(9600);
   while (!Serial)
     delay(1);
   Serial.println("Begin!");
   Wire.begin();
+  selPort(1);
+  _chassis = new Chassis();
+  _laser = new LaserSystem();
+  _comm = new SA();
   _chassis->init();
   _chassis->reset();
   _laser->init();
-  if (therm1.begin(0x5a) == false) {
+   selPort(0);
+  _color = new Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_2_4MS, TCS34725_GAIN_16X);
+
+  if (_color->begin()) {
+    Serial.println("Found color sensor");
+  } else {
+    Serial.println("No TCS34725 found ... check your connections");
+    while (1);
+  }
+  selPort(1);
+  if (!therm1.begin(0x5b)) {
     Serial.println("Qwiic IR thermometer 1 did not acknowledge! Running I2C scanner.");
     while(1);
   }
-  if (therm2.begin(0x5b) == false) {
+  if (!therm2.begin(0x5a)) {
     Serial.println("Qwiic IR thermometer 2 did not acknowledge! Running I2C scanner.");
     while(1);
   }
@@ -126,7 +146,15 @@ void begin(){
 }
 void readSensors(){//read all sensors
   _chassis->readChassis();
-  light = analogRead(A7);
+
+  selPort(0);
+  light = 1025;
+//  uint16_t r, g, b;
+//  _color->getRawData(&r, &g, &b, &light);
+//  Serial.print(r);
+//  Serial.print(' ');
+//  Serial.println(light);
+  selPort(1);
   lOb = digitalRead(lObPin);
   rOb = digitalRead(rObPin);
 //  Serial.println(lisght);

@@ -9,14 +9,13 @@
    Connect GROUND to common ground */
 
 /* Initialise with default values (int time = 2.4ms, gain = 1x) */
-// Adafruit_TCS34725 tcs = Adafruit_TCS34725();
 
 /* Initialise with specific int time and gain values */
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_2_4MS, TCS34725_GAIN_16X);
 
 void setup(void) {
   Serial.begin(9600);
-
+  Serial.println("hello world");
   if (tcs.begin()) {
     Serial.println("Found sensor");
   } else {

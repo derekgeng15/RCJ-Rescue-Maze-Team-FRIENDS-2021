@@ -56,9 +56,9 @@ void Chassis::updREnc(){
 }
 
 bool Chassis::turnTo(double deg){
-  static double kP = 1.0;
+  static double kP = 1.5;
   static double totalErr = 0;
-  double kI = 0.0075;
+  double kI = 0.085;
   double error = deg - (yaw * 180 / PI);
   //Serial.println((yaw * 180 / PI));
   if(error > 180)
@@ -97,9 +97,9 @@ bool Chassis::turnTo(double deg){
 double lTotalErr = 0;
 double rTotalErr = 0;
 bool Chassis::goMm(double mm){
-  static double kP = 0.25;
+  static double kP = 1.0;
   static double kD = 0;
-  double kI = 0.001;
+  double kI = 0.002;
   double speed;
   //Serial.println(lEncCt);
   lTotalErr+=(encPerMm * mm - lEncCt);

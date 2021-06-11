@@ -41,7 +41,7 @@ double LaserSystem::getDist(int ID){
 }
 
 void LaserSystem::readAll(){
-    Serial.println("READING LASERS");
+//    Serial.println("READING LASERS");
     for(int i = 0; i < NUM_OF_SENSORS; i++){
       //ADAFRUIT
       // laser[i].rangingTest(&measure[i], false);
