@@ -148,10 +148,13 @@ void readSensors(){//read all sensors
   _chassis->readChassis();
   selPort(0);
   light = _color->getC();
-  Serial.println(light);
+//  Serial.println(light);
   selPort(1);
   lOb = digitalRead(lObPin);
   rOb = digitalRead(rObPin);
+//  Serial.print(rOb);
+//  lOb = 0;
+//  rOb = 0;
   therm1.read();
   therm2.read();
    _laser->readAll();  
@@ -326,7 +329,7 @@ bool followPath(){//TODO: Add state machine for following
     if(light <= blackThresh && fstate != FSTATE::BLACKTILE){
         blackcount++;
     }
-    if(blackcount >= 10) {
+    if(blackcount >= 5) {
       fstate = FSTATE::BLACKTILE;
       blackcount = 0;
     }
@@ -398,7 +401,7 @@ bool followPath(){//TODO: Add state machine for following
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE);
             if(fe > 150)
               fe -= 300;
-            fe += (TILE_SIZE)/2 + 90;
+            fe += (TILE_SIZE)/2 + 100;
         }
         if(_laser->getDist(2) < TILE_SIZE)
             angAdj =  -atan2(_laser->getDist(2) - TILE_SIZE/2 + 44, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
@@ -422,7 +425,7 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::FORWARD:{
       _chassis->updateEnc();
-      if(_chassis->getlEncCt() * encPerMm > 150){
+      if(_chassis->getlEncCt() * encPerMm > 100){
         if(light <= silverThresh && blackcount == 0)
           silvercount++;
         if(silvercount >= 5)
@@ -437,8 +440,9 @@ bool followPath(){//TODO: Add state machine for following
       if(_chassis->turnTo(ang[currDir])){
         fstate = CALC;
         blackcount = 0;
+        Serial.print("silver ct:");
+        Serial.println(silver);
         silvercount = 0;
-        silver = false;
         step = skip;
         _chassis->reset();
         if(step == path.length())
