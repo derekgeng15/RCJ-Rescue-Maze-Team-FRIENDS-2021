@@ -15,25 +15,20 @@ void test(String p){
 }
 
 void setup()
-{
-  
+{ 
  begin();
 }
 void loop()
 {
-//    leftServo();
-    //test("R");
   readSensors();
   checkVictim();
-  prevFunc();
+//  prevFunc();
   switch(state){
     case STATE::READING:{
       readSensors();
       readTile();
-      //_comm->writeOut("Gib command");
       getPath();
       state = STATE::FOLLOWING;
-      // delay(500);
       break;
     }
     case STATE::FOLLOWING:{
@@ -42,9 +37,5 @@ void loop()
       break;
     }
   }
-//  _laser->readAll();
-//  print();
-//  delay(500);
-//  _chassis->turnTo(-90);
   
 }

@@ -10,7 +10,7 @@ Adafruit_TCS34725 *_color;
 SA *_comm;
 IRTherm therm1;
 IRTherm therm2;
-Servo x;
+Servo servo;
 
 double oang;
 
@@ -24,7 +24,7 @@ int step, skip;
 uint16_t light;
 int blackcount = 0;
 
-int selPort(int i){
+int selPort(int i){//changes port on MUX
     if(i > 7)
       return 4;
      Wire.beginTransmission(MUX);
@@ -32,30 +32,29 @@ int selPort(int i){
      Wire.endTransmission();
 
 }
-void rightServo() {
-  x.attach(servPin);
-  x.write(135);
+void rightServo() { //deploys kit to right side
+  servo.attach(servPin);
+  servo.write(135);
   delay(1000);
-  x.write(80);
+  servo.write(80);
   delay(1000);
-  x.write(90);
+  servo.write(90);
   delay(1000); 
-  x.detach();
+  servo.detach();
 }
 
-void leftServo() {
-  x.attach(servPin);
-  x.write(45);
+void leftServo() { //deploys kit to left side
+  servo.attach(servPin);
+  servo.write(45);
   delay(1000);
-  x.write(100);
+  servo.write(100);
   delay(1000);
-  x.write(90);
+  servo.write(90);
   delay(1000);
-  x.detach();
+  servo.detach();
 }
 
 bool prev_victim = false;
-
 
 volatile bool victim = false;
 void lMotorEncInterrupt()
@@ -132,15 +131,13 @@ void begin(){
 
   pinMode(lObPin, INPUT_PULLUP);
   pinMode(rObPin, INPUT_PULLUP);
-
-  
   
   attachInterrupt(digitalPinToInterrupt(_chassis->getLEncInt()), lMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(_chassis->getREncInt()), rMotorEncInterrupt, RISING);
   attachInterrupt(digitalPinToInterrupt(sPin), vSerialInterrupt, FALLING);
-  x.attach(servPin);
-  x.write(90);
-  x.detach();
+  servo.attach(servPin);
+  servo.write(90);
+  servo.detach();
   _comm->writeSerial("RESET");
   delay(2000);
 }
@@ -157,12 +154,14 @@ void readSensors(){//read all sensors
   selPort(1);
   lOb = digitalRead(lObPin);
   rOb = digitalRead(rObPin);
-//  Serial.println(lisght);
+  therm1.read();
+  therm2.read();
+//  Serial.println(light);
    _laser->readAll();  
 }
 void print(){
   Serial.println("--------------------");
-//  _chassis->print();
+  _chassis->print();
   _laser->print();
   
   Serial.print("Light: ");
@@ -175,19 +174,14 @@ void readTile(){//read Tile data and send to PI
     return;
   }
   String walls = ""; //Front, Right, Back, Left (Clockwise)
-  // for(int i = 0; i < 3; i++){
-  //   _laser->readAll();
-  //   _laser->print();
-  // }
-  _laser->readAll();
-  _laser->print();
+  // _laser->readAll();
+  // _laser->print();
   if(_laser->getDist(1) < threshold && _laser->getDist(0) < threshold ) {
     walls+="1";
     Serial.println("First Sensor Seen");
   }
   else
     walls+="0";
-
 
   if(_laser->getDist(3) < threshold) {
     Serial.println("Second Sensor Seen");
@@ -202,19 +196,17 @@ void readTile(){//read Tile data and send to PI
   }
   else
     walls+="0";
-   checkVictim();
+  //  checkVictim();
    if(light > silverThresh)
     walls += " CHECKPOINT";
   _comm->writeSerial(walls);
-   checkVictim();
+  //  checkVictim();
    delay(5);
-   //_comm->readConfirm();
 }
 
 void getPath(){//get BFS path from PI
-  checkVictim();
+  // checkVictim();
   path = _comm->readSerial();
-  String letter;
   if(path.length() == 0) {
     Serial.println("DONE WITH ALL");
     while(1);
@@ -260,14 +252,14 @@ bool obstacle(){
 
 void checkVictim() {
   // String letter;
+  if(prev_victim && _chassis->getrEncCt()>encPerMm*300) {
+    Serial.println("PREV RESETTING");
+    prev_victim = false;
+  }
   if(victim) {
         _chassis->runMotors(0);
         // Serial.println("\nRECIEVED SOMETHING\n");
         // letter = _comm->readSerial();
-        // if(letter[0] == 't'){
-        //   victim = false;
-        //   return;
-        //  }
         int num = digitalRead(vPinA) * 2 + digitalRead(vPinB);
         int side = digitalRead(vPinC);
         _laser->readAll();
@@ -342,7 +334,6 @@ bool followPath(){//TODO: Add state machine for following
 
   (rObCt += rOb) *= rOb;
   (lObCt += lOb) *= lOb;
-      
   
   if(rObCt > 30 && fstate == FSTATE::FORWARD){
     if(ang[currDir] + 45 < 0)
@@ -360,8 +351,30 @@ bool followPath(){//TODO: Add state machine for following
       ostate = OSTATE::BACKWARDS;
       fstate = FSTATE::OBSTACLE;
   }
-  
-  //readSensors();
+  if(therm1.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
+    Serial.println(therm1.object());
+    Serial.println("SAW HEAT\n");
+    _chassis->resetR();
+    _chassis->runMotors(0);
+    digitalWrite(9, HIGH);
+    leftServo();
+    delay(5000);
+    digitalWrite(9, LOW);
+    prev_victim = true;
+  }
+  if(therm2.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
+    Serial.println(therm2.object());
+
+    Serial.println("SAW HEAT\n");
+    _chassis->resetR();
+    _chassis->runMotors(0);
+    
+    digitalWrite(9, HIGH);
+    rightServo();
+    delay(5000);
+    digitalWrite(9, LOW);
+    prev_victim = true;
+  }
   switch(fstate){
     case FSTATE::CALC:{
       skip = step + 1;
@@ -372,40 +385,6 @@ bool followPath(){//TODO: Add state machine for following
       break;
     }
     case FSTATE::TURNING:{
-      if(therm1.read()) {
-//        Serial.print(" Temp 1: ");
-//        Serial.println(String(therm1.object(), 2));
-        if(therm1.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
-          Serial.println(therm1.object());
-
-          Serial.println("SAW HEAT\n");
-          _chassis->resetR();
-          _chassis->runMotors(0);
-          
-          digitalWrite(9, HIGH);
-          leftServo();
-          delay(5000);
-          digitalWrite(9, LOW);
-          prev_victim = true;
-        }
-      }
-      if(therm2.read()) {
-//        Serial.print(" Temp 1: ");
-//        Serial.println(String(therm1.object(), 2));
-        if(therm2.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
-          Serial.println(therm2.object());
-
-          Serial.println("SAW HEAT\n");
-          _chassis->resetR();
-          _chassis->runMotors(0);
-          
-          digitalWrite(9, HIGH);
-          rightServo();
-          delay(5000);
-          digitalWrite(9, LOW);
-          prev_victim = true;
-        }
-      }
       //Serial.print(millis()-myTime);
       //Serial.print(" ");
       if(_chassis->turnTo(ang[(currDir + getDir(path[step]))%4])){
@@ -443,46 +422,6 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::FORWARD:{
       _chassis->updateEnc();
-//      if(therm2.read()) {
-//        Serial.print(" Temp 2: ");
-//        Serial.println(String(therm2.object(), 2));
-//      }
-//      else {
-//        Serial.println("Failed therm");
-//      }
-        if(therm1.read()) {
-          if(therm1.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
-            Serial.println(therm1.object());
-            Serial.println("SAW HEAT\n");
-            _chassis->resetR();
-            _chassis->runMotors(0);
-            digitalWrite(9, HIGH);
-            leftServo();
-            delay(5000);
-            digitalWrite(9, LOW);
-            prev_victim = true;
-          }
-          
-        }
-        if(therm2.read()) {
-//        Serial.print(" Temp 1: ");
-//        Serial.println(String(therm1.object(), 2));
-          if(therm2.object()>80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
-            Serial.println(therm2.object());
-  
-            Serial.println("SAW HEAT\n");
-            _chassis->resetR();
-            _chassis->runMotors(0);
-            
-            digitalWrite(9, HIGH);
-            rightServo();
-            delay(5000);
-            digitalWrite(9, LOW);
-            prev_victim = true;
-          }
-      }
-     // Serial.print(millis()-myTime);
-     // Serial.print(" ");
       if(_chassis->goMm(forward) || _laser->getDist(0) <= 60){
         fstate = FORADJ;
       }
