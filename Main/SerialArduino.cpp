@@ -1,24 +1,5 @@
 #include "SerialArduino.h"
 
-/*SA::SA(){
-}*/
-//Direction SA::getDir()
-//{
-//  Serial.println("Waiting for direction:");
-//  while(!Serial2.available());
-//    buff = Serial2.readStringUntil('\n');
-//    Serial.println(buff);
-//    char res = buff[0];
-//    if(res=='N')
-//      return Direction::NORTH;
-//    if(res=='E')
-//      return Direction::EAST;
-//    if(res=='S')
-//      return Direction::SOUTH;
-//    if(res=='W')
-//      return Direction::WEST;
-//}
-
 String SA::readSerial(){
   Serial.println("Waiting for message");
   auto start = millis();

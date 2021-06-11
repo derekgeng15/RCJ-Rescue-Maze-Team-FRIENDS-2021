@@ -6,7 +6,6 @@ double rSpeed = 0;
 
 Chassis::Chassis():_imu(55, 0x28)//, _lEnc(18, 31, 1), _rEnc(19, 38, 0)
 {
-  //_imu = Adafruit_BNO055(55, 0x28);
   _lMotor = MeMegaPiDCMotor(PORT1B);
   _rMotor = MeMegaPiDCMotor(PORT2B);
   _lEnc = Encoder(18, 31, 1);

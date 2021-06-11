@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Wire.h>
-// #include <Adafruit_VL53L0X.h>
 #include <VL53L0X.h>
 
 //address we will assign if dual sensor is present
@@ -24,11 +23,6 @@
 
 class LaserSystem{
   private:
-    //objects for the vl53l0x
-    //Adafruit
-    // Adafruit_VL53L0X laser[NUM_OF_SENSORS];
-    // VL53L0X_RangingMeasurementData_t measure[NUM_OF_SENSORS];
-    //Pololu
     VL53L0X laser[NUM_OF_SENSORS];
     const int ID[NUM_OF_SENSORS] = {0x40, 0x43, 0x44, 0x42};
     const int shut[NUM_OF_SENSORS] = {28, 29, 26, 27};//, 39, 28};

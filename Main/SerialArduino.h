@@ -10,14 +10,9 @@ class SA{
 
 
   private:  
-    String buff;
-    //Direction getDir();
-    
-    
-    
+    String buff;  
   public:
     void writeSerial(String x);
-    //SA();
     String readIn();
     void writeConfirm();
     void readConfirm();
