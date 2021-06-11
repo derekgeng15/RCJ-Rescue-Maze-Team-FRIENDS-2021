@@ -23,6 +23,9 @@ String path;
 int step, skip;
 uint16_t light;
 int blackcount = 0;
+int silvercount = 0;
+bool silver = false;
+
 
 int selPort(int i){//changes port on MUX
     if(i > 7)
@@ -103,7 +106,7 @@ void begin(){
   _chassis->reset();
   _laser->init();
    selPort(0);
-  _color = new Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_2_4MS, TCS34725_GAIN_16X);
+  _color = new Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_16X);
 
   if (_color->begin()) {
     Serial.println("Found color sensor");
@@ -143,20 +146,14 @@ void begin(){
 }
 void readSensors(){//read all sensors
   _chassis->readChassis();
-
   selPort(0);
-  light = 1025;
-//  uint16_t r, g, b;
-//  _color->getRawData(&r, &g, &b, &light);
-//  Serial.print(r);
-//  Serial.print(' ');
-//  Serial.println(light);
+  light = _color->getC();
+  Serial.println(light);
   selPort(1);
   lOb = digitalRead(lObPin);
   rOb = digitalRead(rObPin);
   therm1.read();
   therm2.read();
-//  Serial.println(light);
    _laser->readAll();  
 }
 void print(){
@@ -197,8 +194,10 @@ void readTile(){//read Tile data and send to PI
   else
     walls+="0";
   //  checkVictim();
-   if(light > silverThresh)
+   if(silver){
     walls += " CHECKPOINT";
+    silver = false;
+   }
   _comm->writeSerial(walls);
   //  checkVictim();
    delay(5);
@@ -324,9 +323,10 @@ bool followPath(){//TODO: Add state machine for following
        * 
        */
   if(step == path.length() - 1) {
-    if(light <= blackThresh && fstate != FSTATE::BLACKTILE)
+    if(light <= blackThresh && fstate != FSTATE::BLACKTILE){
         blackcount++;
-    if(blackcount >= 20) {
+    }
+    if(blackcount >= 10) {
       fstate = FSTATE::BLACKTILE;
       blackcount = 0;
     }
@@ -422,6 +422,12 @@ bool followPath(){//TODO: Add state machine for following
     }
     case FSTATE::FORWARD:{
       _chassis->updateEnc();
+      if(_chassis->getlEncCt() * encPerMm > 150){
+        if(light <= silverThresh && blackcount == 0)
+          silvercount++;
+        if(silvercount >= 5)
+          silver = true;
+      }
       if(_chassis->goMm(forward) || _laser->getDist(0) <= 60){
         fstate = FORADJ;
       }
@@ -431,6 +437,8 @@ bool followPath(){//TODO: Add state machine for following
       if(_chassis->turnTo(ang[currDir])){
         fstate = CALC;
         blackcount = 0;
+        silvercount = 0;
+        silver = false;
         step = skip;
         _chassis->reset();
         if(step == path.length())
