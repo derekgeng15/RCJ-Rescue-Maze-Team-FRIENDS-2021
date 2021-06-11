@@ -40,7 +40,7 @@ time.sleep(1)
 frame_size = (320, 240)  #Width, Height
 
 while True:
-    clearFile()
+    #clearFile()
     last_seen_frame=-5
     cycle_count = 1
     AI = Nav(readInWall=True)
@@ -66,6 +66,10 @@ while True:
             for i in range(4):
                 if(msg[i]=="1"):
                     AI.markWall((i + AI.direction) % 4)
+                    
+        if 'CHECKPOINT' in msg:
+            AI.markCheckpoint()
+            AI.flush()
         
         # Calculate Movement Commands
         commands = AI.calculate()
