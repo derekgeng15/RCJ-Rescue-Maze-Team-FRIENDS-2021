@@ -19,6 +19,7 @@ class Nav:
         # 2D array
         self.initialPosition = (20, 20)
         self.rows, self.cols = (40, 40)
+        #self.field = [[cell()]*self.cols]*self.rows
         self.field = [[cell() for j in range(self.cols)]
                       for i in range(self.rows)]
         self.startPosition = self.initialPosition
@@ -38,8 +39,6 @@ class Nav:
         else:
             print("Wall.txt did not open successfully. . .")
             raise SystemExit
-        # This is to hold stuff to write out to file when we see checkpoint
-        self.writeFileBuffer = []
         
         if readInWall:
             # Read in whole file, and then turn string into list of words
@@ -59,25 +58,17 @@ class Nav:
                     print("Read checkpoint!")
                     self.field[row][col].checkpoint = True
                     # Update starting position to last found checkpoint
-                    self.location = (row, col)
+                    self.startPosition = (row, col)
                 else:  # Data is giving a wall direction
                     self.markWall(typeOfData, (row, col), writeToFile=False)
-            if self.location == self.initialPosition:
-                self.markVisited(self.initialPosition)
-        print("Starting Position:", self.location)
         print()
 
     #If wall data and victim data looks solid, then all data in buffer will actually be written to file.
     def flush(self):
-        for i in range(len(self.writeFileBuffer)):
-            self.filePtr.write(self.writeFileBuffer[i])
         self.filePtr.flush()
         print("Flushed data buffer to file!")
-        self.clearFileBuffer()
 
     # Clears wall.txt
-    def clearFileBuffer(self):
-        self.writeFileBuffer.clear()
 
     # Converts a direction in str to int format or int to str format
     def convertDirection(self, direction):
@@ -171,7 +162,7 @@ class Nav:
         direction = self.convertDirection(direction)  # Convert direction to string
         if writeToFile:
             # Row, Col, Direction
-            self.writeFileBuffer.append(str(loc[0]) + ' ' +
+            self.filePtr.write(str(loc[0]) + ' ' +
                                str(loc[1]) + ' ' + direction + '\n')
             #self.filePtr.flush()
             print("Entered & wrote wall: ", direction, 'at:', loc[0], loc[1])
@@ -183,7 +174,7 @@ class Nav:
             loc = self.location
         print("Wrote:", '\"' + str(loc[0]), str(loc[1]), 'CHECKPOINT' + '\"', "to File!")
         # Row, Col, Direction
-        self.writeFileBuffer.append(str(loc[0]) + ' ' + str(loc[1]) + ' ' + 'CHECKPOINT' + '\n')
+        self.filePtr.write(str(loc[0]) + ' ' + str(loc[1]) + ' ' + 'CHECKPOINT' + '\n')
         self.field[loc[0]][loc[1]].checkpoint = True  # Mark Victim
         #self.filePtr.flush()
 
@@ -194,7 +185,7 @@ class Nav:
         self.field[loc[0]][loc[1]].visited = True  # Mark Victim
         if writeToFile:
             # Row, Col, Direction
-            self.writeFileBuffer.append(str(loc[0]) + ' ' + str(loc[1]) + ' ' + 'V' + '\n')
+            self.filePtr.write(str(loc[0]) + ' ' + str(loc[1]) + ' ' + 'V' + '\n')
            # self.filePtr.flush()
 
     # Marks seen victim at current location
@@ -203,7 +194,7 @@ class Nav:
             loc = self.location
         print("Wrote Victim to File at:", loc[0], loc[1])
         # Row, Col, Direction
-        self.writeFileBuffer.append(str(loc[0]) + ' ' +
+        self.filePtr.write(str(loc[0]) + ' ' +
                            str(loc[1]) + ' ' + 'VICTIM' + '\n')
         self.field[loc[0]][loc[1]].victim = True  # Mark Victim
         #self.filePtr.flush()

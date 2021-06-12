@@ -58,9 +58,12 @@ class Nav:
                     print("Read checkpoint!")
                     self.field[row][col].checkpoint = True
                     # Update starting position to last found checkpoint
-                    self.startPosition = (row, col)
+                    self.location = (row, col)
                 else:  # Data is giving a wall direction
                     self.markWall(typeOfData, (row, col), writeToFile=False)
+            if self.location == self.initialPosition:
+                self.markVisited(self.initialPosition)
+        print("Starting Position:", self.location)
         print()
 
     #If wall data and victim data looks solid, then all data in buffer will actually be written to file.

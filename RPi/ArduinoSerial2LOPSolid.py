@@ -176,6 +176,7 @@ while True:
                     cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
                 break
     print("\n\n\n=====RESETTING PROGRAM=====\n\n\n")
+    AI.clearFileBuffer()
 capL.release()
 capR.release()
 
