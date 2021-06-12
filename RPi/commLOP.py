@@ -25,7 +25,7 @@ class Comm:
 
         # GPIO Stuff
         self.INTERRUPT = 4 # Port 3 on MegaPi
-        self.BITONE = 16 # Corresponds to Pin 2 on Arduino
+        self.BITONE = 16 # Corresponds to Pin 49 on Arduino
         self.BITTWO = 20 # Corresponds to Pin 5 on Arduino
         self.DETECTIONPIN = 26 # Corresponds to Pin 6 on Arduino
         self.DIRECTIONPIN = 21 # Corresponds to Pin 4 on Arduino
