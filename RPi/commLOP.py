@@ -55,12 +55,13 @@ class Comm:
             try:
                 while(self.in_waiting()): #if there's something in the buffer
                     pass
+                size = self.ser.in_waiting
                 x = self.ser.read_until("\n")
                 msg = x.decode('ascii')
                 if msg[0:5]=="RESET":
                     LOP = True
                 print("Recieved: \"", msg, "\" from arduino")
-                print("Message Size:", self.ser.in_waiting)
+                print("Message Size:", size)
                 done = True
             except IOError as e:
                 print ("Something Bad Happened!")

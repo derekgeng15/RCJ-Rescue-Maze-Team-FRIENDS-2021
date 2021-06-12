@@ -38,8 +38,8 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
 
 def cuts(img, direction, height, width, value = 0):
     LRCUT = 15
-    TBCUT = 27
-    modifier = 25
+    TBCUT = 32
+    modifier = 17
     if direction=="left":
         img[0:TBCUT+modifier, :] = value # Cut more left of the image
     else:
@@ -77,9 +77,10 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     gray = cuts(uncut_gray.copy(), direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 75, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(blurred, 55, 255, cv2.THRESH_BINARY)[1]
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
-    
+    #print('returned')
+    #print('gbr', gbr)
     #return gbr
     
     if gbr=="S":
@@ -87,10 +88,11 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
         method = {"mean": cv2.ADAPTIVE_THRESH_MEAN_C, "gaus": cv2.ADAPTIVE_THRESH_GAUSSIAN_C}
         thresh = cv2.adaptiveThreshold(uncut_gray.copy(), 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
         bfr = processLetter(thresh, showFrame, frameCounting, frameCount)
-        if bfr == gbr:
+        '''if bfr == gbr:
             return "S"
         else:
-            return None
+            return None'''
+        return bfr
         
     else:
         return gbr
@@ -194,7 +196,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             #Determing HSU
             print("Top: {}, Mid: {}, Bot: {}".format(len(contop), len(conmid), len(conbot)))
             if len(contop) == 2 and len(conmid) == 1 and len(conbot) == 2:
-                return "H"
+                return 'H'
             elif len(contop) == 1 and len(conmid) == 1 and len(conbot) == 1:
                 return "S"
             elif (len(contop) == 2 and len(conmid) == 2 and len(conbot) == 1) or (len(contop) == 1 and len(conmid) == 2 and len(conbot) == 2):
