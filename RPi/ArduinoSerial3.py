@@ -105,7 +105,7 @@ while True:
             # Capture frame-by-frame
             ret, frameL = capL.read()
             ret, frameR = capR.read() 
-            writeFrames = False
+            writeFrames = True
 
             # Increasing frameCount
             frameCount += 1
@@ -116,7 +116,7 @@ while True:
             #cv2.imwrite("imgs/Camera1 - Right" + str(frameCount) + ".png", frameR)
 
             # Double Detection Buffer
-            if last_seen_frame + 20 >= frameCount:
+            if last_seen_frame + 25 >= frameCount:
                 continue
             
             # Victim Detection with Left Camera
@@ -148,14 +148,14 @@ while True:
                 #print("Saw Nothing Right Cam! -", frameCount)
             
             # Updating Letter Buffer
-            if victimL=="H" or victimL=="U":
-                letterBufferL.append(victimL)
-                letterBufferL.pop(0)
+            #if victimL=="S":
+            #    letterBufferL.append(victimL)
+            #    letterBufferL.pop(0)
             letterBufferL.append(victimL)
             letterBufferL.pop(0)
-            if victimR=="H" or victimR=="U":
-                letterBufferR.append(victimR)
-                letterBufferR.pop(0)
+            #if victimR=="S":
+            #    letterBufferR.append(victimR)
+            #    letterBufferR.pop(0)
             letterBufferR.append(victimR)
             letterBufferR.pop(0)
             #letterBufferL.sort()

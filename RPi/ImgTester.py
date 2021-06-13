@@ -12,7 +12,7 @@ from LetterDetector import *
 #frame = cv2.imread("H-sideways-small.jpg")
 #frame = cv2.imread("imgs/Camera1 - Left64.png")
 #frame = cv2.imread("imgs/Camera1 - Right9.png")
-frame = cv2.imread("imgs/Camera1 Left - 997.png")
+frame = cv2.imread("imgs/Camera1 Left - 883.png")
 #frame = cv2.imread("imgs/Camera1 Right - 9.png")
 cv2.imshow("frame", frame)
 

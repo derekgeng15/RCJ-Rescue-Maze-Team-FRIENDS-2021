@@ -142,13 +142,13 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     #thresh += 20
     #print(img[height//2 + 20][width//2 + 20])
-    areaFilterMin = 900
+    areaFilterMin = 800
     areaFilterMax = 458483098410923840
     hwRatio = 1.75
 
     # Filtering for Yellow
     yellowFilter = np.zeros((height, width), dtype="uint8")
-    yellowFilterBool = np.logical_and(np.logical_and((greenChannel * 0.7 > blueChannel), (redChannel * 0.7 > blueChannel)), (np.absolute(greenChannel.astype(int)-redChannel.astype(int)) < 30)) # Make sure both Red and Green are much larger than blue as well as red and gren not too far from each other
+    yellowFilterBool = np.logical_and(np.logical_and((greenChannel * 0.5 > blueChannel), (redChannel * 0.5 > blueChannel)), (np.absolute(greenChannel.astype(int)-redChannel.astype(int)) < 30)) # Make sure both Red and Green are much larger than blue as well as red and gren not too far from each other
     #print("Abs diff:", int(greenChannel[height//2][width//2]) - int(redChannel[height//2][width//2]))
     #yellowFilterBool = np.logical_and((greenChannel * 0.55 > blueChannel), (redChannel * 0.55 > blueChannel))
     yellowFilter[yellowFilterBool == True] = 255
@@ -182,7 +182,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     # Filtering for Red
     redFilter = np.zeros((height, width), dtype="uint8")
-    redFilterBool = redChannel * 0.5 > greenChannel
+    redFilterBool = redChannel * 0.4 > greenChannel
     redFilter[redFilterBool == True] = 255
     redFiltered = np.bitwise_and(thresh, redFilter)
 

@@ -38,20 +38,22 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
 
 def cuts(img, direction, height, width, value = 0):
     LRCUT = 15
-    TBCUT = 32
-    modifier = 17
+    TBCUT = 30
+    modifier = 3 # Modifier for TB based on side
+    otherModifier = 70 # Modifier for bottom if top, etc.
+    inverseModifier = 15 # Modifier for LR
     if direction=="left":
         img[0:TBCUT+modifier, :] = value # Cut more left of the image
     else:
-        img[0:TBCUT, :] = value
+        img[0:TBCUT+otherModifier, :] = value
     
     if direction=="right":
         img[height-TBCUT-modifier:height, :] = value
     else:
-        img[height-TBCUT:height, :] = value
+        img[height-TBCUT-otherModifier:height, :] = value
         
-    img[:, 0:LRCUT] = value
-    img[:, width-LRCUT:width] = value
+    img[:, 0:LRCUT+inverseModifier] = value
+    img[:, width-LRCUT-inverseModifier:width] = value
     return img
 
 # Fixes angle of HSU given the image, the contour analyzed, and the index of contour
@@ -77,22 +79,22 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     gray = cuts(uncut_gray.copy(), direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 55, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
     #print('returned')
     #print('gbr', gbr)
-    #return gbr
+    return gbr
     
     if gbr=="S":
         blurred = cv2.bilateralFilter(uncut_gray.copy(), 5, 15, 15)
         method = {"mean": cv2.ADAPTIVE_THRESH_MEAN_C, "gaus": cv2.ADAPTIVE_THRESH_GAUSSIAN_C}
         thresh = cv2.adaptiveThreshold(uncut_gray.copy(), 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
         bfr = processLetter(thresh, showFrame, frameCounting, frameCount)
-        '''if bfr == gbr:
+        if bfr == gbr:
             return "S"
         else:
-            return None'''
-        return bfr
+            return None
+        #return bfr
         
     else:
         return gbr
@@ -129,7 +131,7 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>700 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>550 and cv2.contourArea(c) < 10000):
 
             # Fix angle of contour
             areaFilteredCopy = fixContourAngle(areaFilteredCopy, c, showFrame=True)
