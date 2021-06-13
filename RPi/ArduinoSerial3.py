@@ -116,7 +116,7 @@ while True:
             #cv2.imwrite("imgs/Camera1 - Right" + str(frameCount) + ".png", frameR)
 
             # Double Detection Buffer
-            if last_seen_frame + 15 >= frameCount:
+            if last_seen_frame + 20 >= frameCount:
                 continue
             
             # Victim Detection with Left Camera

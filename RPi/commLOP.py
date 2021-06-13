@@ -43,7 +43,7 @@ class Comm:
 
     # If the detection pin is set to high (then stop detection)
     def doneDetection(self):
-        return GPIO.input(DETECTIONPIN)
+        return GPIO.input(self.DETECTIONPIN)
 
     # Sets all pins (interrupt, letter, bitone, bittwo)
     def setPins(self, interrupt=GPIO.LOW, bittone=GPIO.LOW, bittwo=GPIO.LOW, directionpin=GPIO.LOW):
