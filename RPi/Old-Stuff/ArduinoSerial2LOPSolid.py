@@ -110,7 +110,7 @@ while True:
             frameCount += 1
 
             # Display the resulting frame
-            #cv2.imshow('Camera1',frame)
+            #if writeFrames:
             #cv2.imwrite("imgs/Camera1 - Left" + str(frameCount) + ".png", frameL)
             #cv2.imwrite("imgs/Camera1 - Right" + str(frameCount) + ".png", frameR)
 

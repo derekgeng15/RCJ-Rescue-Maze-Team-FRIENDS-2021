@@ -34,10 +34,16 @@ class Comm:
         GPIO.setup(self.BITONE, GPIO.OUT)
         GPIO.setup(self.BITTWO, GPIO.OUT)
         GPIO.setup(self.DIRECTIONPIN, GPIO.OUT)
+        GPIO.setup(self.DETECTIONPIN, GPIO.IN)
         self.setPins() # Default sets all pins to low
 
+    # If there's stuff in the serial buffer
     def in_waiting(self):
         return self.ser.in_waiting == 0
+
+    # If the detection pin is set to high (then stop detection)
+    def doneDetection(self):
+        return GPIO.input(DETECTIONPIN)
 
     # Sets all pins (interrupt, letter, bitone, bittwo)
     def setPins(self, interrupt=GPIO.LOW, bittone=GPIO.LOW, bittwo=GPIO.LOW, directionpin=GPIO.LOW):

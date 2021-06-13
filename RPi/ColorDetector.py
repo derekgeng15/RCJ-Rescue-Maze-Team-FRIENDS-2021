@@ -142,7 +142,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     #thresh += 20
     #print(img[height//2 + 20][width//2 + 20])
-    areaFilterMin = 1000
+    areaFilterMin = 900
     areaFilterMax = 458483098410923840
     hwRatio = 1.75
 
