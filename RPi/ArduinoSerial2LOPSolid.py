@@ -104,7 +104,7 @@ while True:
             # Capture frame-by-frame
             ret, frameL = capL.read()
             ret, frameR = capR.read() 
-            writeFrames = True
+            writeFrames = False
 
             # Increasing frameCount
             frameCount += 1

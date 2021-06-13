@@ -57,7 +57,7 @@ def cuts(img, direction, height, width, value = 0):
 # Fixes angle of HSU given the image, the contour analyzed, and the index of contour
 def fixContourAngle(img, c, showFrame=True):
     angle = cv2.minAreaRect(c)[-1]
-    print("Angle:", angle)
+    #print("Angle:", angle)
     fixedImg = RotateImage(img, angle, 1.0, printOn=False)
     if showFrame:
         cv2.imshow("Rotated", fixedImg)

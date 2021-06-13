@@ -25,9 +25,9 @@ while(cap.isOpened()):
         continue
     #print(getLetter(frame, showFrame=True))
 
-    color = getColorVictimVectorized(frame, direction="right", showFrame=True)
+    color = getColorVictimVectorized(frame, direction="left", showFrame=True)
     if color == None:
-        print(getLetter(frame, direction="right"))
+        print(getLetter(frame, direction="left"))
     else:
         print(color)
 
