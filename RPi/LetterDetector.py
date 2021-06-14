@@ -38,16 +38,18 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
 
 def cuts(img, direction, height, width, value = 0):
     LRCUT = 15
-    TBCUT = 30
-    modifier = 3 # Modifier for TB based on side
-    otherModifier = 70 # Modifier for bottom if top, etc.
+    TBCUT = 20
+    modifier = 6 # Modifier for TB based on side
+    otherModifier = 75 # Modifier for bottom if top, etc.
     inverseModifier = 15 # Modifier for LR
-    if direction=="left":
+    #if direction=="left":
+    if True:
         img[0:TBCUT+modifier, :] = value # Cut more left of the image
     else:
         img[0:TBCUT+otherModifier, :] = value
     
-    if direction=="right":
+    #if direction=="right":
+    if False:
         img[height-TBCUT-modifier:height, :] = value
     else:
         img[height-TBCUT-otherModifier:height, :] = value
@@ -79,17 +81,34 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     gray = cuts(uncut_gray.copy(), direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(blurred, 73, 255, cv2.THRESH_BINARY)[1]
+    if showFrame:
+        cv2.imshow("thresh", thresh)
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
     #print('returned')
     #print('gbr', gbr)
-    return gbr
+    #return gbr
     
     if gbr=="S":
-        blurred = cv2.bilateralFilter(uncut_gray.copy(), 5, 15, 15)
+        gray2 = uncut_gray.copy() #cuts(uncut_gray.copy(), direction, height, width, 255)
+        blurred = cv2.bilateralFilter(gray2, 5, 15, 15)
         method = {"mean": cv2.ADAPTIVE_THRESH_MEAN_C, "gaus": cv2.ADAPTIVE_THRESH_GAUSSIAN_C}
-        thresh = cv2.adaptiveThreshold(uncut_gray.copy(), 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
-        bfr = processLetter(thresh, showFrame, frameCounting, frameCount)
+        thresh = cv2.adaptiveThreshold(gray2, 255, method["gaus"],cv2.THRESH_BINARY, 35, 7)
+        thresh = cuts(thresh, direction, height, width, 255)
+        #print(thresh)
+        
+        '''gray3 = cuts(gray.copy(), direction, height, width, 0)
+        sliceFilter = cv2.threshold(gray3, 1, 255, cv2.THRESH_BINARY)[1]'''
+        
+        f_thresh = thresh #np.logical_and(thresh, sliceFilter)
+        #print(f_thresh.shape)
+        
+        #print(f_thresh)
+        
+        if showFrame:
+            cv2.imshow("thresh - bilateral", f_thresh)
+        bfr = processLetter(f_thresh, showFrame, frameCounting, frameCount, bfr = True)
+        print("BFR:", bfr)
         if bfr == gbr:
             return "S"
         else:
@@ -99,7 +118,7 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     else:
         return gbr
 
-def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
+def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1, bfr=True):
     #Cutting to get rid of treads and stuff
     #Current Cuts are for sideways-angled camera
     #thresh[:, 0:70] = 255
@@ -109,8 +128,6 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     thresh[:, 0:50] = 255
     '''
     
-    if showFrame:
-        cv2.imshow("thresh", thresh)
     if frameCounting:
         cv2.imwrite("imgs/thresh - " + str(frameCount) + ".png", thresh)
     #dum, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
@@ -124,14 +141,17 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
     areaFilteredCopy = areaFiltered.copy()
 
     if showFrame:
-        cv2.imshow("areaFilteredCopy", areaFilteredCopy)
+        if bfr:
+            cv2.imshow("areaFilteredCopy - BFR", areaFilteredCopy)
+        else:
+            cv2.imshow("areaFilteredCopy", areaFilteredCopy)
     if frameCounting:
         cv2.imwrite("imgs/areaFilteredCopy - " + str(frameCount) + ".png", areaFilteredCopy)
 
     #PROCESSING STEP
     contours, h = cv2.findContours(areaFilteredCopy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # Should only be one contour because of image
     for i, c in enumerate(contours):
-        if(cv2.contourArea(c)>550 and cv2.contourArea(c) < 10000):
+        if(cv2.contourArea(c)>550 and cv2.contourArea(c) < 15000):
 
             # Fix angle of contour
             areaFilteredCopy = fixContourAngle(areaFilteredCopy, c, showFrame=True)
@@ -140,6 +160,8 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             if len(contours)==0:
                 return None
             c = max(contours, key = cv2.contourArea) # Give the largest contour
+            if cv2.contourArea(c) > 15000 or cv2.contourArea(c) < 550:
+                continue
 
             #GETTING BOUNDING RECTANGLE
             rect = cv2.boundingRect(c)
@@ -163,7 +185,10 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1):
             print("HW Ratio:", h/w, "WH Ratio:", w/h) 
             
             if showFrame:
-                cv2.imshow("ROI", cropped)
+                if bfr:
+                    cv2.imshow("ROI - bfr", cropped)
+                else:
+                    cv2.imshow("ROI", cropped)
             if frameCounting:
                 cv2.imwrite("imgs/ROI - " + str(frameCount) + ".png", cropped)
             #   cv2.imwrite("imgs/ROI.png", cropped)

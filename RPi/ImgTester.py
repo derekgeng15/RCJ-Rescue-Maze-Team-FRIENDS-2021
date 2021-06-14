@@ -12,16 +12,16 @@ from LetterDetector import *
 #frame = cv2.imread("H-sideways-small.jpg")
 #frame = cv2.imread("imgs/Camera1 - Left64.png")
 #frame = cv2.imread("imgs/Camera1 - Right9.png")
-frame = cv2.imread("imgs/Camera1 Left - 883.png")
-#frame = cv2.imread("imgs/Camera1 Right - 9.png")
+#frame = cv2.imread("imgs/Camera1 Left - 828.png")
+frame = cv2.imread("imgs/Camera1 Right - 542.png")
 cv2.imshow("frame", frame)
 
 #print("Got:", getLetter(frame))
 #print("Got:", getColorVictimVectorized(frame))
 
-color = getColorVictimVectorized(frame, direction = 'left', showFrame=True)
+color = getColorVictimVectorized(frame, direction = 'right', showFrame=True)
 if color == None:
-    print(getLetter(frame, direction='left'))
+    print(getLetter(frame, direction='right'))
 else:
     print(color)
 
