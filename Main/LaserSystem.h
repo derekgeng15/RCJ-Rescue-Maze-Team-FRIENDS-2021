@@ -26,7 +26,7 @@ class LaserSystem{
     VL53L0X laser[NUM_OF_SENSORS];
     const int ID[NUM_OF_SENSORS] = {0x40, 0x43, 0x44, 0x42};
     const int shut[NUM_OF_SENSORS] = {28, 29, 26, 27};//, 39, 28};
-    double dist[NUM_OF_SENSORS];
+    uint16_t dist[NUM_OF_SENSORS];
   public:
     void init();
     void readAll();

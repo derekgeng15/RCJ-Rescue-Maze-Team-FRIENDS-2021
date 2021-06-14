@@ -46,18 +46,19 @@ extern String path;
 extern int step, skip;
 extern int blackcount;
 
-extern volatile bool victim;
+extern volatile bool victim, color;
 
 const int sPin = 3;
-const int vPinA = 5, vPinB = 2, vPinC = 4, vPinD = 6;
+const int vPinA = 5, vPinB = 49, vPinC = 4, vPinD = 6;
+const int cIPin = 2;
 extern bool prev_victim;
 
 const int lObPin = 22;
 const int rObPin = 23;
 extern bool lOb, rOb;
 extern int lObCt, rObCt;
-const int blackThresh = 10000;
-const int silverThresh = 15000;
+const int blackThresh = 7000;
+const int silverThresh = 11000;
 
 void lMotorEncInterrupt();
 void rMotorEncInterrupt();
