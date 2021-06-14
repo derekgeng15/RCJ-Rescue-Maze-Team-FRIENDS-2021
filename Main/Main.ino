@@ -20,12 +20,15 @@ void setup()
 }
 void loop()
 {
+  
+
   readSensors();
+//  test("UU");
   checkVictim();
 //  prevFunc();
   switch(state){
     case STATE::READING:{
-      readSensors();
+//      readSensors();
       readTile();
       getPath();
       state = STATE::FOLLOWING;
