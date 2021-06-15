@@ -142,7 +142,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     #thresh += 20
     #print(img[height//2 + 20][width//2 + 20])
-    areaFilterMin = 800
+    areaFilterMin = 700 # 800 on easy 2 field
     areaFilterMax = 458483098410923840
     hwRatio = 1.75
 
@@ -182,7 +182,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
 
     # Filtering for Red
     redFilter = np.zeros((height, width), dtype="uint8")
-    redFilterBool = redChannel * 0.4 > greenChannel
+    redFilterBool = redChannel * 0.50 > greenChannel #red/g ratio is 0.4 for easy 2 field
     redFilter[redFilterBool == True] = 255
     redFiltered = np.bitwise_and(thresh, redFilter)
 

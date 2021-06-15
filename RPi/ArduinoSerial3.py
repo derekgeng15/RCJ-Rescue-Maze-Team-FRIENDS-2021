@@ -116,7 +116,7 @@ while True:
             #cv2.imwrite("imgs/Camera1 - Right" + str(frameCount) + ".png", frameR)
 
             # Double Detection Buffer
-            if last_seen_frame + 25 >= frameCount:
+            if last_seen_frame + 15 >= frameCount: # Frame skip is 25 for easy 2 field
                 continue
             
             # Victim Detection with Left Camera
@@ -148,14 +148,14 @@ while True:
                 #print("Saw Nothing Right Cam! -", frameCount)
             
             # Updating Letter Buffer
-            #if victimL=="S":
-            #    letterBufferL.append(victimL)
-            #    letterBufferL.pop(0)
+            if victimL=="H": # Add this only for difficult field 2
+                letterBufferL.append(victimL)
+                letterBufferL.pop(0)
             letterBufferL.append(victimL)
             letterBufferL.pop(0)
-            #if victimR=="S":
-            #    letterBufferR.append(victimR)
-            #    letterBufferR.pop(0)
+            if victimR=="H": # Add this only for difficult field 2
+                letterBufferR.append(victimR)
+                letterBufferR.pop(0)
             letterBufferR.append(victimR)
             letterBufferR.pop(0)
             #letterBufferL.sort()
