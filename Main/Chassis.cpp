@@ -57,8 +57,6 @@ void Chassis::updREnc(){
 bool Chassis::turnTo(double deg){
   static double kP = 1.0;
   static double totalErr = 0;
-  Serial.print("total error");
-  Serial.println(totalErr);
   double kI = 0.065;
   double error = deg - (yaw * 180 / PI);
   //Serial.println((yaw * 180 / PI));
@@ -77,7 +75,46 @@ bool Chassis::turnTo(double deg){
     rSpeed = max(error * kP + (totalErr*kI), 65);
   }
   
-  if(abs(error) > 1 && abs(totalErr) < 2750 ){
+  if(abs(error) > 1 && abs(totalErr) < 2000){
+    _rMotor.run(lSpeed);
+    _lMotor.run(rSpeed);
+    counter++;
+    return false;
+  }
+  else{
+    Serial.println("Done Turning");
+    Serial.print("TURN COUNT: ");
+    Serial.println(counter);
+    _rMotor.run(0);
+    _lMotor.run(0);
+    totalErr = 0;
+    counter=0;
+    return true;
+  }
+}
+
+bool Chassis::turnVic(double deg){
+  static double kP = 0.3;
+  static double totalErr = 0;
+  double kI = 0.000005;
+  double error = deg - (yaw * 180 / PI);
+  //Serial.println((yaw * 180 / PI));
+  if(error > 180)
+    error = 360 - error;
+  else if(error < -180)
+    error += 360;
+  if(abs(error) < 90) 
+   totalErr+=error;
+  if(error * kP + (totalErr*kI) < 0) {
+     lSpeed = min(error * kP + (totalErr*kI), -65);
+     rSpeed = min(error * kP + (totalErr*kI), -65);
+  }
+  else {
+    lSpeed = max(error * kP + (totalErr*kI), 65);
+    rSpeed = max(error * kP + (totalErr*kI), 65);
+  }
+  
+  if(abs(error) > 1){
     _rMotor.run(lSpeed);
     _lMotor.run(rSpeed);
     counter++;
@@ -101,6 +138,41 @@ bool Chassis::goMm(double mm){
   static double kP = 0.3;
   static double kD = 0;
   double kI = 0.004;
+  double speed;
+  //Serial.println(lEncCt);
+  lTotalErr+=(encPerMm * mm - lEncCt);
+  //rTotalErr+=(encPerMm * mm - rEncCt);
+  if(abs(lEncCt - (encPerMm * mm))>9){
+    if((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI))<0) {
+      speed = min((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), -30);
+    }
+    else {
+      speed = max((((encPerMm * mm - lEncCt)  * kP + (lEncCt - plEncCt) * kD) + (lTotalErr*kI)), 30);
+    }
+    lSpeed = -1*speed;
+    rSpeed = speed;
+    _lMotor.run(lSpeed);
+    _rMotor.run(rSpeed);
+//    Serial.println("RUNNING");
+    counter++;
+    return false;
+  }
+  else{
+    _lMotor.run(0);
+    _rMotor.run(0);
+    Serial.print("COUNT: ");
+    Serial.println(counter);
+    Serial.println("DONE");
+    lTotalErr = 0;
+    rTotalErr = 0;
+    counter = 0;
+    return true;
+  }
+}
+bool Chassis::goVic(double mm){
+  static double kP = 0.1;
+  static double kD = 0;
+  double kI = 0.0004;
   double speed;
   //Serial.println(lEncCt);
   lTotalErr+=(encPerMm * mm - lEncCt);

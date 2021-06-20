@@ -23,9 +23,9 @@ void loop()
   
 
   readSensors();
-//  test("UU");
+//  test("UUD");
   checkVictim();
-//  prevFunc();
+  prevFunc();
   switch(state){
     case STATE::READING:{
 //      readSensors();

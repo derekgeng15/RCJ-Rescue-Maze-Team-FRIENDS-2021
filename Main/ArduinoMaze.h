@@ -58,7 +58,7 @@ const int rObPin = 23;
 extern bool lOb, rOb;
 extern int lObCt, rObCt;
 const int blackThresh = 7000;
-const int silverThresh = 11000;
+const int silverThresh = 19000;
 
 void lMotorEncInterrupt();
 void rMotorEncInterrupt();

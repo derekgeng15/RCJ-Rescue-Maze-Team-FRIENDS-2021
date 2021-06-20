@@ -17,7 +17,7 @@ double oang;
 bool lOb, rOb;
 int lObCt = 0, rObCt = 0;
 
-double threshold = 200;
+double threshold = 250;
 double forward, angAdj;
 String path;
 int step, skip;
@@ -111,7 +111,7 @@ void begin() {
   _chassis->reset();
   _laser->init();
   selPort(0);
-  _color = new Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_154MS, TCS34725_GAIN_16X);
+  _color = new Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_16X);
   
   if (_color->begin()) {
     Serial.println("Found color sensor");
@@ -225,7 +225,7 @@ void readTile() { //read Tile data and send to PI
   }
   else
     walls += "0";
-  if (silver && false) {
+  if (light > silverThresh) {
     
     walls += " CHECKPOINT";
     silver = false;
@@ -247,28 +247,31 @@ void getPath() { //get BFS path from PI
 bool obstacle() {
   switch (ostate) {
     case OSTATE::BACKWARDS: {
-        if (_chassis->goMm(0)) {
+        if (_chassis->goMm(0) || (millis() - startTime) > 2000) {
           ostate = OSTATE::TURN;
+          startTime = millis();
         }
         break;
       }
     case OSTATE::TURN: {
-        if (_chassis->turnTo(oang)) {
+        if (_chassis->turnTo(oang) || (millis() - startTime) > 2000) {
           ostate = OSTATE::PARK;
+          startTime = millis();
           _chassis->reset();
         }
         break;
       }
     case OSTATE::PARK: {
-        if (_chassis->goMm(-10 / sin(5 * PI / 180))) {
+        if (_chassis->goMm(-10 / sin(15 * PI / 180)) || (millis() - startTime) > 2000) {
           ostate = ADJ;
+          startTime = millis();
         }
         break;
       }
     case OSTATE::ADJ: {
         if (_chassis->turnTo(ang[currDir])) {
           _chassis->reset();
-          forward = 10/tan(5 * PI / 180) + 300;
+          forward = 10/tan(15 * PI / 180) + 330;
           ostate = BACKWARDS;
           return true;
         }
@@ -287,7 +290,13 @@ void checkVictim() {
   }
   if (victim) {
     _chassis->runMotors(0);
-    // Serial.println("\nRECIEVED SOMETHING\n");
+     Serial.println("\nRECIEVED SOMETHING\n");
+     
+     if(fstate == FORWARD){
+      int curr = _chassis->getlEncCt();
+      while(!_chassis->goVic(0))
+        _chassis->readChassis();
+     }
     // letter = _comm->readSerial();
     int num = digitalRead(vPinA) * 2 + digitalRead(vPinB);
     int side = digitalRead(vPinC);
@@ -304,19 +313,32 @@ void checkVictim() {
 
         digitalWrite(9, HIGH);
         //prev_victim = true;
-        double prevAng = _chassis->getYaw();
+        _chassis->readChassis();
+        double prevAngle = _chassis->getYaw() * 180 / PI;
         double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
-        //            while(!_chassis->turnVic(fmod(prevAng + 45, 360)))
-        //              _chassis->readChassis();
-        for (int i = 0; i < num; i++) {
-          rightServo();
+        double tang;
+        if(num != 0){
+          tang = prevAngle - 60;
+          Serial.print("prevAngle: ");
+          Serial.println(prevAngle);
+          Serial.print("tang ");
+          Serial.println(tang);
+          double st = millis();
+          while(!_chassis->turnVic(tang) && millis() - st < 2000){
+            _chassis->readChassis();
+          }
+          _chassis->runMotors(0);
+          for (int i = 0; i < num; i++) {
+            rightServo();
+          }
+          while(!_chassis->turnVic(prevAngle)){
+            _chassis->readChassis();
+          }
+          _chassis->setCount(pL, pR);
         }
-
-        delay(3000);
+        delay(5000 - 2000 * (num != 0));
         digitalWrite(9, LOW);
-        //            while(!_chassis->turnVic(prevAng))
-        //              _chassis->readChassis();
-        _chassis->setCount(pL, pR);
+
       }
       if ((_laser->getDist(2) < 200 && side == 0)) {
         _chassis->runMotors(0);
@@ -326,21 +348,32 @@ void checkVictim() {
         Serial.println(num);
         //prev_victim = true;
         digitalWrite(9, HIGH);
-        double prevAng = _chassis->getYaw();
+        _chassis->readChassis();
+        double prevAngle = _chassis->getYaw() * 180 / PI;
         double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
-        double target = prevAng - 45;
-        if (target < 0)
-          target += 360;
-        //            while(!_chassis->turnVic(target))
-        //              _chassis->readChassis();
-        for (int i = 0; i < num; i++) {
-          leftServo();
+        double tang;
+        if(num != 0){
+          tang = fmod(prevAngle + 60, 360);
+          Serial.print("prevAngle");
+          Serial.println(prevAngle);
+          Serial.print("tang");
+          Serial.println(tang);
+          double st = millis();
+          while(!_chassis->turnVic(tang) &&  millis() - st < 2000)
+            _chassis->readChassis();
+           _chassis->runMotors(0);
+          for (int i = 0; i < num; i++) {
+            leftServo();
+          }
+         tang = _chassis->getYaw() * 180 / PI - 60;
+     
+         while(!_chassis->turnVic(tang))
+           _chassis->readChassis();
+          _chassis->setCount(pL, pR);
         }
-        delay(3000);
+        delay(5000 - 2000 * (num != 0));
         digitalWrite(9, LOW);
-        //            while(!_chassis->turnVic(prevAng))
-        //              _chassis->readChassis();
-        _chassis->setCount(pL, pR);
+ 
       }
     }
     victim = false;
@@ -370,35 +403,55 @@ bool followPath() { //TODO: Add state machine for following
 
   if (rObCt > 5 && fstate == FSTATE::FORWARD) {
     Serial.println("ROB");
-    if (ang[currDir] + 5 < 0)
-      oang = ang[currDir] + 5 + 360;
+    if (ang[currDir] + 15 < 0)
+      oang = ang[currDir] + 15 + 360;
     else
-      oang = fmod(ang[currDir] + 5, 360);
+      oang = fmod(ang[currDir] + 15, 360);
     ostate = OSTATE::BACKWARDS;
     fstate = FSTATE::OBSTACLE;
+    startTime = millis();
   }
   if (lObCt > 5 && fstate == FSTATE::FORWARD) {
     Serial.println("LOB");
-    if (ang[currDir] - 5 < 0)
-      oang = ang[currDir] - 5 + 360;
+    if (ang[currDir] - 15 < 0)
+      oang = ang[currDir] - 15 + 360;
     else
-      oang = fmod(ang[currDir] - 5, 360);
+      oang = fmod(ang[currDir] - 15, 360);
     ostate = OSTATE::BACKWARDS;
     fstate = FSTATE::OBSTACLE;
+    startTime = millis();
   }
-  if (therm1.object() > 85 && !prev_victim && (step == path.length() - 1 || step == 0)) {
+  if (therm1.object() > 80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
     digitalWrite(vPinD, HIGH);
     Serial.println(therm1.object());
     Serial.println("SAW HEAT\n");
     _chassis->resetR();
     _chassis->runMotors(0);
     digitalWrite(9, HIGH);
+    _chassis->readChassis();
+    double prevAngle = _chassis->getYaw() * 180 / PI;
+    double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+    double tang;
+    tang = fmod(prevAngle + 60, 360);
+    Serial.print("prevAngle");
+    Serial.println(prevAngle);
+    Serial.print("tang");
+    Serial.println(tang);
+    double st = millis();
+    while(!_chassis->turnVic(tang) && millis() - st < 2000)
+      _chassis->readChassis();
+     _chassis->runMotors(0);
     leftServo();
-    delay(5000);
+    tang = _chassis->getYaw() * 180 / PI - 60;
+
+    while(!_chassis->turnVic(tang))
+      _chassis->readChassis();
+    _chassis->setCount(pL, pR);
+    delay(3000);
     digitalWrite(9, LOW);
     prev_victim = true;
   }
-  if (therm2.object() > 85 && !prev_victim && (step == path.length() - 1 || step == 0)) {
+  if (therm2.object() > 80 && !prev_victim && (step == path.length() - 1 || step == 0)) {
     digitalWrite(vPinD, HIGH);
     Serial.println(therm2.object());
 
@@ -407,37 +460,59 @@ bool followPath() { //TODO: Add state machine for following
     _chassis->runMotors(0);
 
     digitalWrite(9, HIGH);
-    rightServo();
-    delay(5000);
+    double prevAngle = _chassis->getYaw() * 180 / PI;
+    double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+    double tang;
+    tang = fmod(prevAngle + 300, 360);
+    Serial.print("prevAngle: ");
+    Serial.println(prevAngle);
+    Serial.print("tang ");
+    Serial.println(tang);
+    double st = millis();
+    while(!_chassis->turnVic(tang) && millis() - st < 2000){
+      _chassis->readChassis();
+    }
+     _chassis->runMotors(0);
+      rightServo();
+    while(!_chassis->turnVic(prevAngle)){
+      _chassis->readChassis();
+    }
+    _chassis->setCount(pL, pR);
+    delay(3000);
     digitalWrite(9, LOW);
     prev_victim = true;
   }
   switch (fstate) {
     case FSTATE::CALC: {
+        
         skip = step + 1;
         //      while(skip < path.length() && path[skip] == 'U')
         //        skip++;
         fstate = TURNING;
         myTime = millis();
+        startTime = millis();
         turnStep = 0;
+        if(skip != 0)
+            delay(300);
         break;
       }
     case FSTATE::TURNING: {
         //Serial.print(millis()-myTime);
         //Serial.print(" ");
         if(path[step] == 'D' && turnStep == 0){
-          if(_chassis->turnTo(ang[(currDir + 3) % 4])){
+          if(_chassis->turnTo(ang[(currDir + 3) % 4]) || (millis() - startTime) > 3000){
             turnStep++;
-            delay(500);
+            delay(300);
+            startTime = millis();
           }
           break;
         }
-        if (_chassis->turnTo(ang[(currDir + getDir(path[step])) % 4])) {
+        if (_chassis->turnTo(ang[(currDir + getDir(path[step])) % 4]) || (millis() - startTime) > 3000) {
           currDir = (currDir + getDir(path[step])) % 4;
           _laser->readAll();
           angAdj = 0;
           //self-correction
-          double fe = TILE_SIZE + 40;
+          double fe = TILE_SIZE + 30 + (path[step] == 'D') * 25;
           //        Serial.println(abs(_chassis->getPitch() - 5) * 180 / PI));
           if (min(_laser->getDist(0), _laser->getDist(1)) < 500 && abs(_laser->getDist(0) - _laser->getDist(1)) < 100 && abs(_chassis->getPitch() * 180 / PI - 5)  <= 10) {
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE);
@@ -446,15 +521,17 @@ bool followPath() { //TODO: Add state machine for following
             fe += (TILE_SIZE) / 2 + 90;
           }
           if (_laser->getDist(2) < TILE_SIZE)
-            angAdj =  -atan2(_laser->getDist(2) - 95, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
+            angAdj =  -atan2(_laser->getDist(2) - 100, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
           if (_laser->getDist(3) < TILE_SIZE)
-            angAdj =  atan2(_laser->getDist(3) - 118, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
+            angAdj =  atan2(_laser->getDist(3) - 135, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
           forward = ((skip - step - 1) * (TILE_SIZE) + fe) / cos(PI / 180 * angAdj) ;
           _laser->print();
           Serial.println(forward);
           Serial.println(angAdj);
           fstate  = TURNADJ;
+          delay(500);
           startTime = millis();
+
         }
         break;
       }
@@ -478,6 +555,7 @@ bool followPath() { //TODO: Add state machine for following
         }
         if (_chassis->goMm(forward) || (_laser->getDist(0) <= 65 && _laser->getDist(1) <= 65)) {
           fstate = FORADJ;
+
         }
         break;
       }
@@ -502,7 +580,7 @@ bool followPath() { //TODO: Add state machine for following
       }
     case FSTATE::BLACKTILE: {
         Serial.println("BLACKOUT");
-        if (_chassis->goMm(-10 * encPerMm)) {
+        if (_chassis->goMm(-0 * encPerMm)) {
           return true;
         }
         break;
