@@ -38,13 +38,13 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
 
 def cuts(img, direction, height, width, value = 0, bf=False):
     LRCUT = 15
-    TBCUT = 25 # 20 for Easy 2
+    TBCUT = 20 # 20 for Easy 2
     modifier = 6 # Modifier for TB based on side
-    otherModifier = 75 # Modifier for bottom if top, etc.
+    otherModifier = 50 # Modifier for bottom if top, etc.
     inverseModifier = 15 # Modifier for LR
     #if direction=="left":
     if bf:
-        modifier+=30
+        modifier+=5
     if True:
         img[0:TBCUT+modifier, :] = value # Cut more left of the image
     else:
@@ -83,7 +83,7 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     gray = cuts(uncut_gray.copy(), direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)[1] # 73 for easy 2
+    thresh = cv2.threshold(blurred, 73, 255, cv2.THRESH_BINARY)[1] # 73 for easy 2
     if showFrame:
         cv2.imshow("thresh", thresh)
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
@@ -110,7 +110,8 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
         if showFrame:
             cv2.imshow("thresh - bilateral", f_thresh)
         bfr = processLetter(f_thresh, showFrame, frameCounting, frameCount, bfr = True)
-        print("BFR:", bfr)
+        if bfr != None:
+            print("BFR:", bfr)
         if bfr == 'H': #ADDED FOR DIFFICULT 2
             return 'H'
         if bfr == gbr and gbr == "S":
