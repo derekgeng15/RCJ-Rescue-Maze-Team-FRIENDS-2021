@@ -53,6 +53,8 @@ while True:
     COMM = Comm()
     Hlocation = -1 # H Tile Location
     Ylocation = -1 # Y Tile Location
+    Hcoord = None
+    Ycoord = None
     Hside = -1 # H Side
     Yside = -1 # Y side
     coordinateDictionary = {(20, 20) : 1, (19, 20) : 2, (18, 20) : None, (17, 20) : 3,
@@ -208,24 +210,28 @@ while True:
             if letterBufferL[0] == 'H':
                 print("Found H:", AI.getPrevLocation())
                 Hlocation = coordinateDictionary[AI.getPrevLocation()]
+                Hcoord = AI.getPrevLocation()
                 print("Tile:", Hlocation)
                 Hside = (AI.getPrevDirection()+3)%4
                 print("Side:", Hside)
             elif letterBufferL[0] == "Yellow":
                 print("Found Yellow:", AI.getPrevLocation())
                 Ylocation = coordinateDictionary[AI.getPrevLocation()]
+                Ycoord = AI.getPrevLocation()
                 print("Tile:", Ylocation)
                 Yside = (AI.getPrevDirection()+3)%4
                 print("Side:", Yside)
             if letterBufferR[0] == 'H':
                 print("Found H:", AI.getPrevLocation())
                 Hlocation = coordinateDictionary[AI.getPrevLocation()]
+                Hcoord = AI.getPrevLocation()
                 print("Tile:", Hlocation)
                 Hside = (AI.getPrevDirection()+1)%4
                 print("Side:", Hside)
             elif letterBufferR[0] == "Yellow":
                 print("Found Yellow:", AI.getPrevLocation())
                 Ylocation = coordinateDictionary[AI.getPrevLocation()]
+                Ycoord = AI.getPrevLocation()
                 print("Tile:", Ylocation)
                 Yside = (AI.getPrevDirection()+1)%4
                 print("Side:", Yside)
@@ -234,11 +240,16 @@ while True:
         if Hlocation != -1 and Ylocation != -1:
             print('SAW BOTH H AND YELLOW VICTIMS')
             AI.markEverythingVisited()
-            print("Hlocation:", Hlocation)
+            homeToH, direction = AI.calculatePath((20, 20), Hcoord, 0)
+            HToY, direction = AI.calculatePath(Hcoord, Ycoord, direction)
+            YToH, direction = AI.calculatePath(Ycoord, (20, 20), dir)
+            path = homeToH + 'H' + str(Hside) + HToY + 'Y' + str(Yside) + YToH
+
+            '''print("Hlocation:", Hlocation)
             print("Hside:", Hside)
             print("Ylocation:", Ylocation)
             print("Yside:", Yside)
-            s.sendData(Hlocation, Hside, Ylocation, Yside)
+            s.sendData(Hlocation, Hside, Ylocation, Yside)'''
             print("Sent Server Data!")
                 
     print("\n\n\n=====RESETTING PROGRAM=====\n\n\n")

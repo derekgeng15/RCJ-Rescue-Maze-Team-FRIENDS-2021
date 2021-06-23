@@ -319,6 +319,65 @@ class Nav:
             self.markWall(i, loc=obsLocation, writeToFile=True)
         pass
 
+    
+    # FOR SUPERTEAMS: Finds the shortestPath from startPos to targetPos given startDirection using BFS algorithim
+    # @return Returns the set of movement commands to reach the targetPos from startPos, the direction of robot when it reaches targetPos
+    def calculatePath(self, startPosition, targetPos, startDirection):
+        print("Calculating:", startPosition, "to", targetPos, "!")
+        visited = [[False for j in range(self.cols)] for i in range(self.rows)]
+        prevCell = [[[-1, -1] for j in range(self.cols)] for i in range(self.rows)]# Previous cell array
+        queue = list()
+        queue.append(startPosition)  # first add start location
+        finishedBFS = False
+        while len(queue) > 0 and not finishedBFS:
+            currentCell = queue.pop(0)
+            visited[currentCell[0]][currentCell[1]] = True
+            for direction in range(0, 4):
+                moveIsPossible, newCell = self.canMove(direction, currentCell, backtrack=True)
+                if moveIsPossible:
+                    # if new cell reached targetPos
+                    if newCell == targetPos:
+                        prevCell[newCell[0]][newCell[1]] = (currentCell[0], currentCell[1])
+                        finishedBFS = True
+                        break
+                    # new cell is not in the queue and newCell has not reached targetPos
+                    elif (not newCell in queue) and visited[newCell[0]][newCell[1]] == False:
+                        prevCell[newCell[0]][newCell[1]] = (currentCell[0], currentCell[1])
+                        queue.append(newCell)
+                    else:
+                        pass
+
+        if not finishedBFS:  # Didn't see victim for some reason
+            print("ERROR: COULDN'T FIND TARGET POSITION")
+            exit()
+
+        # Now it's time to backtrack each location! One by One!
+        locations = [targetPos]
+        newPosition = list(targetPos)
+        while newPosition != startPosition:
+            newPosition = prevCell[newPosition[0]][newPosition[1]]
+            locations.append(newPosition)
+        locations.reverse()
+
+        #print("Locations:", locations)
+
+        # With each tile's coordinates on the path, we can now calculate the commands
+        commands = list()
+        currentPosition = locations[0]
+        currentDirection = startDirection
+        finalDirection = None
+        i = 1
+        while i < len(locations):
+            newPosition = locations[i]
+            command, newDirection = self.determineCommand(currentDirection, newPosition, oldPosition=currentPosition)
+            commands.append(command)
+            currentPosition = newPosition
+            currentDirection = newDirection
+            finalDirection = currentDirection
+            i += 1
+
+        return commands, currentDirection
+
     # Finds the path to the nearest unvisited tile via BFS
     # @return Returns the set of commands to reach the new location, the new location's coordinates, and the new direction. Does NOT update location & direction for you
     def backtrackBFS(self):
