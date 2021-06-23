@@ -53,13 +53,15 @@ class Comm:
         GPIO.output(self.DIRECTIONPIN, directionpin)
 
     # Just waits for buffer to be availble, and then reads it in
-    def read(self):
+    def read(self, capL, capR):
         done = False
         LOP = False
         print("Waiting...")
         while not done:
             try:
                 while(self.in_waiting()): #if there's something in the buffer
+                    ret, frameL = capL.read()
+                    ret, frameR = capR.read() 
                     pass
                 size = self.ser.in_waiting
                 x = self.ser.read_until("\n")
@@ -69,6 +71,8 @@ class Comm:
                 print("Recieved: \"", msg, "\" from arduino")
                 print("Message Size:", size)
                 done = True
+                ret, frameL = capL.read()
+                ret, frameR = capR.read()
             except IOError as e:
                 print ("Something Bad Happened!")
                 print(e)

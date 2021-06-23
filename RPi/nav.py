@@ -25,6 +25,7 @@ class Nav:
         # row, column. Robot's current position on the field
         self.location = self.startPosition
         self.direction = 0  # The current direction of the robot
+        self.previousDirection = 0
         self.previousLocation = (-1, -1)
         if os.path.isfile('wall.txt'): # If wall.txt already exists
             self.filePtr = open("wall.txt", 'r+')
@@ -66,7 +67,25 @@ class Nav:
                 self.markVisited(self.initialPosition)
         print("Starting Position:", self.location)
         print()
-
+    
+    def getLocation(self):
+        return self.location
+    
+    def getPrevLocation(self):
+        return self.previousLocation
+    
+    def getDirection(self):
+        return self.direction
+    
+    def getPrevDirection(self):
+        return self.previousDirection
+    
+    def markEverythingVisited(self):
+        print("Marking Everything Visited!")
+        for i in range(self.rows):
+            for j in range(self.cols):
+                self.field[i][j].visited = True
+    
     #If wall data and victim data looks solid, then all data in buffer will actually be written to file.
     def flush(self):
         for i in range(len(self.writeFileBuffer)):
@@ -264,7 +283,8 @@ class Nav:
                 return []
             else:
                 print("!!!GOING BACK HOME!!!")
-
+        
+        self.previousDirection = self.direction
         self.direction = newDirection  # Update Direction
         self.previousLocation = self.location  # Update previous location
         self.location = newLocation  # Update location to new location
