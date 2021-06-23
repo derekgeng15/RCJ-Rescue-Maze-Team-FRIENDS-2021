@@ -22,47 +22,46 @@ clearFile()
 
 AI = Nav(readInWall=True)
 
-AI.markWall(2, writeToFile=False)
+'''AI.markWall(2, writeToFile=False)
 
-print(AI.calculatePath((20,20), (17,17), 0))
+print(AI.calculatePath((20,20), (17,17), 0))'''
 
-'''AI.markWall(0, writeToFile=False)
+AI.markWall(0, writeToFile=False)
 AI.markWall(1, writeToFile=False)
 AI.markWall(3, writeToFile=False)
+AI.markWall(1, loc=(19, 17), writeToFile=False)
+AI.markWall(0, loc=(17, 18), writeToFile=False)
 
-commands = AI.calculate()
+Hcoord = (17, 18)
+Ycoord = (19, 17)
+Hside = 2
+Yside = 3
 
-print("Current Location:", AI.getLocation())
-print("Previous Location:", AI.getPrevLocation())
-print("Current Direction:", AI.getDirection())
-print("Print Right:", (AI.getDirection()+1)%4)
-print("Print Left:", (AI.getDirection()+3)%4)
+print("Hcoord:", Hcoord)
+print("Hside:", Hside)
+print("Ycoord:", Ycoord)
+print("Yside:", Yside)
 
+homeToH, direction = AI.calculatePath((20, 20), Hcoord, 0)
+HToY, direction = AI.calculatePath(Hcoord, Ycoord, direction)
+YToH, direction = AI.calculatePath(Ycoord, (20, 20), direction)
 
-commands = AI.calculate()
+def parseCommands(commands):
+    parsed = ""
+    for command in commands:
+        if command=='FORWARD':
+            parsed += 'F'
+        elif command=='RIGHT':
+            parsed += 'R'
+        elif command=='BACKWARD':
+            parsed += 'B'
+        else:
+            parsed += 'L'
+    return parsed
 
-print("Current Location:", AI.getLocation())
-print("Previous Location:", AI.getPrevLocation())
-print("Current Direction:", AI.getDirection())
-print("Print Right:", (AI.getDirection()+1)%4)
-print("Print Left:", (AI.getDirection()+3)%4)
+homeToH = parseCommands(homeToH)
+HToY = parseCommands(HToY)
+YToH = parseCommands(YToH)
+path = homeToH + 'H' + str(Hside) + HToY + 'Y' + str(Yside) + YToH
 
-commands = AI.calculate()
-
-print("Current Location:", AI.getLocation())
-print("Previous Location:", AI.getPrevLocation())
-print("Current Direction:", AI.getDirection())
-print("Print Right:", (AI.getDirection()+1)%4)
-print("Print Left:", (AI.getDirection()+3)%4)
-
-print("Tile Number", coordinateDictionary[AI.getLocation()])
-
-AI.markWall(2, writeToFile = False)
-
-commands = AI.calculate()
-
-print("Current Location:", AI.getLocation())
-print("Previous Location:", AI.getPrevLocation())
-print("Current Direction:", AI.getDirection())
-print("Print Right:", (AI.getDirection()+1)%4)
-print("Print Left:", (AI.getDirection()+3)%4)'''
+print("Calculated Path:", path)

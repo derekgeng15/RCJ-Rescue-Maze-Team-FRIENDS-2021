@@ -237,20 +237,42 @@ while True:
                 print("Side:", Yside)
             print('\n')
             
-        if Hlocation != -1 and Ylocation != -1:
-            print('SAW BOTH H AND YELLOW VICTIMS')
-            AI.markEverythingVisited()
-            homeToH, direction = AI.calculatePath((20, 20), Hcoord, 0)
-            HToY, direction = AI.calculatePath(Hcoord, Ycoord, direction)
-            YToH, direction = AI.calculatePath(Ycoord, (20, 20), dir)
-            path = homeToH + 'H' + str(Hside) + HToY + 'Y' + str(Yside) + YToH
+    if Hlocation != -1 and Ylocation != -1:
+        print('SAW BOTH H AND YELLOW VICTIMS')
 
-            '''print("Hlocation:", Hlocation)
-            print("Hside:", Hside)
-            print("Ylocation:", Ylocation)
-            print("Yside:", Yside)
-            s.sendData(Hlocation, Hside, Ylocation, Yside)'''
-            print("Sent Server Data!")
+        print("Hlocation:", Hlocation)
+        print("Hcoord:", Hcoord)
+        print("Hside:", Hside)
+        print("Ylocation:", Ylocation)
+        print("Ycoord:", Ycoord)
+        print("Yside:", Yside)
+        
+        homeToH, direction = AI.calculatePath((20, 20), Hcoord, 0)
+        HToY, direction = AI.calculatePath(Hcoord, Ycoord, direction)
+        YToH, direction = AI.calculatePath(Ycoord, (20, 20), direction)
+
+        def parseCommands(commands):
+            parsed = ""
+            for command in commands:
+                if command=='FORWARD':
+                    parsed += 'F'
+                elif command=='RIGHT':
+                    parsed += 'R'
+                elif command=='BACKWARD':
+                    parsed += 'B'
+                else:
+                    parsed += 'L'
+            return parsed
+
+        homeToH = parseCommands(homeToH)
+        HToY = parseCommands(HToY)
+        YToH = parseCommands(YToH)
+        path = homeToH + 'H' + str(Hside) + HToY + 'Y' + str(Yside) + YToH
+
+        print("Calculated Path:", path)
+        
+        #s.sendData(Hlocation, Hside, Ylocation, Yside)
+        #print("Sent Server Data!")
                 
     print("\n\n\n=====RESETTING PROGRAM=====\n\n\n")
     AI.clearFileBuffer()
