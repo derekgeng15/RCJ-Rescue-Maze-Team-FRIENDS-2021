@@ -238,6 +238,7 @@ while True:
             print('\n')
             
     if Hlocation != -1 and Ylocation != -1:
+        # Maze must be completely explored for this to work
         print('SAW BOTH H AND YELLOW VICTIMS')
 
         print("Hlocation:", Hlocation)
