@@ -128,8 +128,8 @@ while True:
             if last_seen_frame + 15 <= frameCount: # COMM.doneDetection() or 
                 continue
             
-            print("Last Seen Frame", last_seen_frame)
-            print("Frame Count", frameCount)
+            #print("Last Seen Frame", last_seen_frame)
+            #print("Frame Count", frameCount)
 
             # Increasing frameCount
             frameCount += 1
@@ -237,7 +237,7 @@ while True:
                 print("Side:", Yside)
             print('\n')
             
-    if Hlocation != -1 and Ylocation != -1:
+    if Hside != -1 and Yside != -1:
         # Maze must be completely explored for this to work
         print('SAW BOTH H AND YELLOW VICTIMS')
 
@@ -272,8 +272,8 @@ while True:
 
         print("Calculated Path:", path)
         
-        #s.sendData(Hlocation, Hside, Ylocation, Yside)
-        #print("Sent Server Data!")
+        s.sendData(path)
+        print("Sent Server Data!")
                 
     print("\n\n\n=====RESETTING PROGRAM=====\n\n\n")
     AI.clearFileBuffer()

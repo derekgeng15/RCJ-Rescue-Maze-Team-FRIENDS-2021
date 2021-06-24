@@ -51,7 +51,7 @@ while True:
         print("\n--- CYCLE ", cycle_count, "---") # To denote new cycle
         cycle_count+= 1
         # Read in Arduino Wall Data for Current Tile
-        msg, lop = COMM.read()
+        msg, lop = COMM.read(capL, capR)
         
         if lop:
             break
@@ -100,7 +100,7 @@ while True:
         letterBufferR = [None,None]
 
         # Will exit if wall data is in buffer or if detectionPin is set high
-        while(COMM.in_waiting() and not COMM.doneDetection()): #cap.isOpened() and 
+        while(COMM.in_waiting()): #cap.isOpened() and # and not COMM.doneDetection() 
 
             # Capture frame-by-frame
             ret, frameL = capL.read()
@@ -117,7 +117,7 @@ while True:
                 pass
             
             # Double Detection Buffer
-            if last_seen_frame + 20 >= frameCount: # Frame skip is 25 for easy 2 field
+            if last_seen_frame + 30 >= frameCount or COMM.doneDetection(): # Frame skip is 25 for easy 2 field
                 continue
             
             # Victim Detection with Left Camera
