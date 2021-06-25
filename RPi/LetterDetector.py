@@ -45,6 +45,7 @@ def cuts(img, direction, height, width, value = 0, bf=False):
     #if direction=="left":
     if bf:
         modifier+=5
+        
     if True:
         img[0:TBCUT+modifier, :] = value # Cut more left of the image
     else:
