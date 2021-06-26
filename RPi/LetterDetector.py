@@ -37,20 +37,27 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
 def cuts(img, direction, height, width, value = 0, bf=False):
-    LRCUT = 15 # Modifier for LEFT & RIGHT
-    TBCUT = 20 # Modifier for TOP & BOTTOM
-    modifier = 8 # Modifier for TOP
-    otherModifier = 50 # Modifier for BOTTOM
-    inverseModifier = 15 # Modifier for LEFT
-    otherInverseModifier = 15 # Modifier for RIGHT
+    LRCUT = 15
+    TBCUT = 20 # 20 for Easy 2
+    modifier = 6 # Modifier for TB based on side
+    otherModifier = 50 # Modifier for bottom if top, etc.
+    inverseModifier = 15 # Modifier for LR
+    #if direction=="left":
     if bf:
         modifier+=5
+    if True:
+        img[0:TBCUT+modifier, :] = value # Cut more left of the image
+    else:
+        img[0:TBCUT+otherModifier, :] = value
     
-    img[0:TBCUT+modifier, :] = value # Cut more of the TOP of frame
-    img[height-TBCUT-otherModifier:height, :] = value # Cut more of the BOTTOM of frame
-    
-    img[:, 0:LRCUT+inverseModifier] = value # Cut more of the left of image
-    img[:, width-LRCUT-otherInverseModifier:width] = value # Cut more of the right of image
+    #if direction=="right":
+    if False:
+        img[height-TBCUT-modifier:height, :] = value
+    else:
+        img[height-TBCUT-otherModifier:height, :] = value
+        
+    img[:, 0:LRCUT+inverseModifier] = value
+    img[:, width-LRCUT-inverseModifier:width] = value
     return img
 
 # Fixes angle of HSU given the image, the contour analyzed, and the index of contour
@@ -67,7 +74,7 @@ def fixContourAngle(img, c, showFrame=True):
 height = 0
 width = 0
 depth = 0
-hwRatio = 1.85
+hwRatio = 1.7
 
 def getLetter(img, direction="right", showFrame=True, frameCounting=False, frameCount=1): #if we want to export imgs
     global height, width, depth
@@ -76,13 +83,13 @@ def getLetter(img, direction="right", showFrame=True, frameCounting=False, frame
     gray = cuts(uncut_gray.copy(), direction, height, width, 255)
     
     blurred = cv2.GaussianBlur(gray, (9, 9), 6)
-    thresh = cv2.threshold(blurred, 84, 255, cv2.THRESH_BINARY)[1] # 73 for easy 2
+    thresh = cv2.threshold(blurred, 73, 255, cv2.THRESH_BINARY)[1] # 73 for easy 2
     if showFrame:
         cv2.imshow("thresh", thresh)
     gbr = processLetter(thresh, showFrame, frameCounting, frameCount)
     #print('returned')
-    #print('GBR:', gbr)
-    return gbr
+    #print('gbr', gbr)
+    #return gbr
     
     if gbr=="S" or gbr==None: # ADDED FOR DIFFICULT 2 | or gbr==None:
         gray2 = uncut_gray.copy() #cuts(uncut_gray.copy(), direction, height, width, 255)
@@ -168,8 +175,8 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1, bfr
             cv2.imshow("Thresh", thresh)'''
             angle = 0 #cv2.minAreaRect(c)[-1]
             #print("Angle:", angle)
-            #cropped = thresh[max(y-10,0):min(y+h+10,height), max(x-10,0):min(x+w+10, width)]
-            cropped = areaFilteredCopy[y:y+h, x:x+w]
+            cropped = areaFilteredCopy[max(y-7,0):min(y+h+7,height), max(x,0):min(x+w, width)]
+            #cropped = areaFilteredCopy[y:y+h, x:x+w]
             if hwRatio*h < w or hwRatio*w < h: # If image dimensions are unreasonable
                 continue
             
@@ -204,14 +211,15 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1, bfr
             cv2.imwrite("RPi/HSU Stuff/H-Bot.jpg", bot)'''
 
             # Filter again (get rid of random micro-contours)
-            areaFilter(top, maxArea=15)
-            areaFilter(mid, maxArea=15)
-            areaFilter(bot, maxArea=15)
+            areaFilter(top, maxArea=30)
+            areaFilter(mid, maxArea=30)
+            areaFilter(bot, maxArea=30)
 
             if showFrame:
-                cv2.imshow("top", top)
-                cv2.imshow("mid", mid)
-                cv2.imshow("bot", bot)
+                #cv2.imshow("top", top)
+                #cv2.imshow("mid", mid)
+                #cv2.imshow("bot", bot)
+                pass
 
             #CONTOURS FOR HSU DETECTION
             (contop, h) = cv2.findContours(top.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -223,7 +231,25 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1, bfr
             if len(contop) == 2 and len(conmid) == 1 and len(conbot) == 2:
                 return 'H'
             elif len(contop) == 1 and len(conmid) == 1 and len(conbot) == 1:
-                return "S"
+                left = croppedCopy[0:roiy,0:int(roix*0.40)]
+                mid2 = croppedCopy[0:roiy,int(roix*0.33):int(roix*0.633)]
+                right = croppedCopy[0:roiy,int(roix*0.65):roix]
+
+                if showFrame:
+                    cv2.imshow("left", left)
+                    cv2.imshow("mid2", mid2)
+                    cv2.imshow("right", right)
+                
+                (conleft, h) = cv2.findContours(left.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                (conmid2, h) = cv2.findContours(mid2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                (conright, h) = cv2.findContours(right.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                print("Left: {}, Mid2: {}, Right: {}".format(len(conleft), len(conmid2), len(conright)))
+                
+                if len(conleft) == 2 and len(conmid2) == 3 and len(conright) == 2:
+                    return "S"
+                else:
+                    return None
             elif (len(contop) == 2 and len(conmid) == 2 and len(conbot) == 1) or (len(contop) == 1 and len(conmid) == 2 and len(conbot) == 2):
                 return "U"
             else:
@@ -234,4 +260,3 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1, bfr
                 cv2.drawContours(thresh, [contours[k]], 0, (0,0,0), cv2.FILLED)
 
     return None
-
