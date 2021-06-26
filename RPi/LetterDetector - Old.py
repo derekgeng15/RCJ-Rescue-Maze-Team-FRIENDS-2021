@@ -234,4 +234,3 @@ def processLetter(thresh, showFrame=True, frameCounting=False, frameCount=1, bfr
                 cv2.drawContours(thresh, [contours[k]], 0, (0,0,0), cv2.FILLED)
 
     return None
-

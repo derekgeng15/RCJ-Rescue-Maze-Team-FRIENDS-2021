@@ -26,10 +26,12 @@ while(cap.isOpened()):
         frameCount += 1
         continue
     #print(getLetter(frame, showFrame=True))
+    
+    #cv2.imwrite("imgs/Camera1 - " + cameraDirection + ' ' + str(frameCount) + ".png", frame)
 
-    color = getColorVictimVectorized(frame, direction=cameraDirection, showFrame=True)
+    color = getColorVictimVectorized(frame, direction=cameraDirection, showFrame=False)
     if color == None:
-        print(getLetter(frame, direction=cameraDirection))
+        print(getLetter(frame, direction=cameraDirection, showFrame = False))
     else:
         print(color)
 

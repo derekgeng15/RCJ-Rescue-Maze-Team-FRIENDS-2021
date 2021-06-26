@@ -117,7 +117,7 @@ while True:
                 pass
             
             # Double Detection Buffer
-            if last_seen_frame + 30 >= frameCount or COMM.doneDetection(): # Frame skip is 25 for easy 2 field
+            if last_seen_frame + 15 >= frameCount or COMM.doneDetection(): # Frame skip is 25 for easy 2 field
                 continue
             
             # Victim Detection with Left Camera
