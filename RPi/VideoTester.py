@@ -31,7 +31,7 @@ while(cap.isOpened()):
 
     color = getColorVictimVectorized(frame, direction=cameraDirection, showFrame=False)
     if color == None:
-        print(getLetter(frame, direction=cameraDirection, showFrame = False))
+        print(getLetter(frame, direction=cameraDirection, showFrame = True))
     else:
         print(color)
 

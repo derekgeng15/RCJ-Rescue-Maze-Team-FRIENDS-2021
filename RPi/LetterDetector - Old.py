@@ -37,20 +37,27 @@ def RotateImage(i,angle, scale, border_mode=cv2.BORDER_CONSTANT, printOn=True):
     return cv2.warpAffine(i, M, (w,h) ,flags=cv2.INTER_CUBIC, borderMode=border_mode )
 
 def cuts(img, direction, height, width, value = 0, bf=False):
-    LRCUT = 15 # Modifier for LEFT & RIGHT
-    TBCUT = 20 # Modifier for TOP & BOTTOM
-    modifier = 8 # Modifier for TOP
-    otherModifier = 50 # Modifier for BOTTOM
-    inverseModifier = 15 # Modifier for LEFT
-    otherInverseModifier = 15 # Modifier for RIGHT
+    LRCUT = 15
+    TBCUT = 20 # 20 for Easy 2
+    modifier = 6 # Modifier for TB based on side
+    otherModifier = 50 # Modifier for bottom if top, etc.
+    inverseModifier = 15 # Modifier for LR
+    #if direction=="left":
     if bf:
         modifier+=5
+    if True:
+        img[0:TBCUT+modifier, :] = value # Cut more left of the image
+    else:
+        img[0:TBCUT+otherModifier, :] = value
     
-    img[0:TBCUT+modifier, :] = value # Cut more of the TOP of frame
-    img[height-TBCUT-otherModifier:height, :] = value # Cut more of the BOTTOM of frame
-    
-    img[:, 0:LRCUT+inverseModifier] = value # Cut more of the left of image
-    img[:, width-LRCUT-otherInverseModifier:width] = value # Cut more of the right of image
+    #if direction=="right":
+    if False:
+        img[height-TBCUT-modifier:height, :] = value
+    else:
+        img[height-TBCUT-otherModifier:height, :] = value
+        
+    img[:, 0:LRCUT+inverseModifier] = value
+    img[:, width-LRCUT-inverseModifier:width] = value
     return img
 
 # Fixes angle of HSU given the image, the contour analyzed, and the index of contour

@@ -41,7 +41,7 @@ frame_size = (320, 240)  #Width, Height
 
 while True:
     #clearFile()
-    last_seen_frame=-5
+    last_seen_frame=-15
     cycle_count = 1
     AI = Nav(readInWall=True)
     COMM = Comm()
@@ -117,7 +117,7 @@ while True:
                 pass
             
             # Double Detection Buffer
-            if last_seen_frame + 15 >= frameCount or COMM.doneDetection(): # Frame skip is 25 for easy 2 field
+            if last_seen_frame + 30 >= frameCount or COMM.doneDetection(): # Frame skip is 25 for easy 2 field
                 continue
             
             # Victim Detection with Left Camera
@@ -161,13 +161,14 @@ while True:
             letterBufferR.pop(0)
             #letterBufferL.sort()
             #letterBufferR.sort()
+            
+            #print("Letter Buffer L:", letterBufferL)
+            #print("Letter Buffer R:", letterBufferR)
 
             if letterBufferL[0] != None and (letterBufferL[0]==letterBufferL[1]):
                 print("\n Found Left Victim!")
                 COMM.sendVictim(victimL, "left")
                 last_seen_frame = frameCount
-                if victimL == 'H' or victimL == 'YELLOW': # ONLY FOR DIFFICULT 2
-                    last_seen_frame += 25
                 if writeFrames:
                     cv2.imwrite("imgs/Camera1 Left - " + str(frameCount) + ".png", frameL)
                 #break
@@ -176,8 +177,6 @@ while True:
                 print("\n Found Right Victim")
                 COMM.sendVictim(victimR, "right")
                 last_seen_frame = frameCount
-                if victimR == 'H' or victimL == 'YELLOW': # ONLY FOR DIFFICULT 2
-                    last_seen_frame += 25
                 if writeFrames:
                     cv2.imwrite("imgs/Camera1 Right - " + str(frameCount) + ".png", frameR)
                 #break

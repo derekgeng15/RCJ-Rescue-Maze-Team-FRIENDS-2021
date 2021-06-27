@@ -3,21 +3,30 @@ import cv2
 import time
 from LetterDetector import *
 
-'''def areaFilter(img):
-    contours, h = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # Get all contours for areaFilter to calculate area via contours
-    
-    # Calculating areas of each contour
-    areas = []
-    for i in range(0,len(contours)):        
-        area = cv2.contourArea(contours[i])
-        areas.append(area)
 
-    if len(areas) > 0:
-        for i in range(0, len(contours)):
-            if areas[i] < 400:
-                cv2.drawContours(img, contours, i, (0,0,0), cv2.FILLED)
+
+def cuts(img, direction, height, width, value = 0, bf=False):
+    LRCUT = 15 # Modifier for LEFT & RIGHT
+    TBCUT = 20 # Modifier for TOP & BOTTOM
+    modifier = 8 # Modifier for TOP
+    otherModifier = 50 # Modifier for BOTTOM
+    inverseModifier = 15 # Modifier for LEFT
+    otherInverseModifier = 15 # Modifier for RIGHT
+    if bf:
+        modifier+=5
     
-    return img'''
+    img[0:TBCUT+modifier, :] = value # Cut TOP of frame
+    img[height-TBCUT-otherModifier:height, :] = value # Cut BOTTOM of frame
+    
+    if direction=="left":
+        inverseModifier += 25
+    if direction=="right":
+        otherInverseModifier += 25
+    
+    img[:, 0:LRCUT+inverseModifier] = value # Cut left of image
+    img[:, width-LRCUT-otherInverseModifier:width] = value # Cut right of image
+    
+    return img
 
 # Using in range
 '''
@@ -144,7 +153,7 @@ def getColorVictimVectorized(img, direction="right", showFrame=True, frameCounti
     #print(img[height//2 + 20][width//2 + 20])
     areaFilterMin = 700 # 800 on easy 2 field
     areaFilterMax = 458483098410923840
-    hwRatio = 1.75
+    hwRatio = 1.65
 
     # Filtering for Yellow
     yellowFilter = np.zeros((height, width), dtype="uint8")
