@@ -31,6 +31,9 @@ enum DIRECTION{
   UP, RIGHT, DOWN, LEFT
 }extern currDir;
 
+const int dx[] = {-1, 0, 1, 0};
+const int dy[] = {0, 1, 0, -1};
+
 const double ang[] = {0, 90, 180, -90};
 
 const int servPin = A6;
@@ -58,7 +61,7 @@ const int rObPin = 23;
 extern bool lOb, rOb;
 extern int lObCt, rObCt;
 const int blackThresh = 7000;
-const int silverThresh = 19000;
+const int silverThresh = 21000;
 
 void lMotorEncInterrupt();
 void rMotorEncInterrupt();

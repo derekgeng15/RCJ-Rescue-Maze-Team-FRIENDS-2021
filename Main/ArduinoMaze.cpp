@@ -119,8 +119,8 @@ void begin() {
     Serial.println("No TCS34725 found ... check your connections");
     while (1);
   }
-  _color->setIntLimits(silverThresh, 20000);
-  _color->setInterrupt(true);
+//  _color->setIntLimits(silverThresh, 20000);
+//  _color->setInterrupt(true);
   selPort(1);
   if (!therm1.begin(0x5b)) {
     Serial.println("Qwiic IR thermometer 1 did not acknowledge! Running I2C scanner.");
@@ -157,6 +157,7 @@ void begin() {
 }
 void readSensors() { //read all sensors
   _chassis->readChassis();
+//  Serial.println(_chassis->getYaw() * 180 / PI);
 //  Serial.println(_chassis->getPitch() * 180 / PI);
 //  if(color){
 //    selPort(0);
@@ -181,7 +182,7 @@ void readSensors() { //read all sensors
   //  rOb = 0;
   therm1.read();
   therm2.read();
-  _laser->readAll();
+//  _laser->readAll();
 }
 void print() {
   Serial.println("--------------------");
@@ -199,7 +200,7 @@ void readTile() { //read Tile data and send to PI
     return;
   }
   String walls = ""; //Front, Right, Back, Left (Clockwise)
-  // _laser->readAll();
+   _laser->readAll();
   // _laser->print();
   for (int i = 0; i < 4; i++) {
     Serial.print("L");
@@ -243,7 +244,7 @@ void getPath() { //get BFS path from PI
   step = 0;
   fstate = CALC;
 }
-
+int fct = 0;
 bool obstacle() {
   switch (ostate) {
     case OSTATE::BACKWARDS: {
@@ -262,7 +263,7 @@ bool obstacle() {
         break;
       }
     case OSTATE::PARK: {
-        if (_chassis->goMm(-10 / sin(15 * PI / 180)) || (millis() - startTime) > 2000) {
+        if (_chassis->goMm(-20 / sin(15 * PI / 180)) || (millis() - startTime) > 2000) {
           ostate = ADJ;
           startTime = millis();
         }
@@ -291,12 +292,14 @@ void checkVictim() {
   if (victim) {
     _chassis->runMotors(0);
      Serial.println("\nRECIEVED SOMETHING\n");
-     
-     if(fstate == FORWARD){
-      int curr = _chassis->getlEncCt();
-      while(!_chassis->goVic(0))
-        _chassis->readChassis();
-     }
+//     if(step >= path.length() - 1 || step == 0){
+////       if(fstate == FORWARD){
+////        int curr = _chassis->getlEncCt();
+////        while(!_chassis->goVic(0))
+////          _chassis->readChassis();
+////       }
+//     }
+     _chassis->runMotors(0);
     // letter = _comm->readSerial();
     int num = digitalRead(vPinA) * 2 + digitalRead(vPinB);
     int side = digitalRead(vPinC);
@@ -314,29 +317,35 @@ void checkVictim() {
         digitalWrite(9, HIGH);
         //prev_victim = true;
         _chassis->readChassis();
-        double prevAngle = _chassis->getYaw() * 180 / PI;
-        double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
-        double tang;
-        if(num != 0){
-          tang = prevAngle - 60;
-          Serial.print("prevAngle: ");
-          Serial.println(prevAngle);
-          Serial.print("tang ");
-          Serial.println(tang);
-          double st = millis();
-          while(!_chassis->turnVic(tang) && millis() - st < 2000){
-            _chassis->readChassis();
-          }
+//        double prevAngle = _chassis->getYaw() * 180 / PI;
+//        double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+//        double tang;
+//        if(num != 0){
+//          tang = prevAngle - 60;
+//          Serial.print("prevAngle: ");
+//          Serial.println(prevAngle);
+//          Serial.print("tang ");
+//          Serial.println(tang);
+//          double st = millis();
+//          while(!_chassis->turnVic(tang) && millis() - st < 2000){
+//            _chassis->readChassis();
+//          }
           _chassis->runMotors(0);
+           for(int i = 0; i < 5; i++){
+              digitalWrite(9, HIGH);
+              delay(500);
+              digitalWrite(9, LOW);
+              delay(500);
+           }
+          digitalWrite(9, HIGH);
           for (int i = 0; i < num; i++) {
             rightServo();
           }
-          while(!_chassis->turnVic(prevAngle)){
-            _chassis->readChassis();
-          }
-          _chassis->setCount(pL, pR);
-        }
-        delay(5000 - 2000 * (num != 0));
+//          while(!_chassis->turnVic(prevAngle)){
+//            _chassis->readChassis();
+//          }
+//          _chassis->setCount(pL, pR);
+//        }
         digitalWrite(9, LOW);
 
       }
@@ -349,29 +358,35 @@ void checkVictim() {
         //prev_victim = true;
         digitalWrite(9, HIGH);
         _chassis->readChassis();
-        double prevAngle = _chassis->getYaw() * 180 / PI;
-        double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
-        double tang;
-        if(num != 0){
-          tang = fmod(prevAngle + 60, 360);
-          Serial.print("prevAngle");
-          Serial.println(prevAngle);
-          Serial.print("tang");
-          Serial.println(tang);
-          double st = millis();
-          while(!_chassis->turnVic(tang) &&  millis() - st < 2000)
-            _chassis->readChassis();
+//        double prevAngle = _chassis->getYaw() * 180 / PI;
+//        double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+//        double tang;
+//        if(num != 0){
+//          tang = fmod(prevAngle + 60, 360);
+//          Serial.print("prevAngle");
+//          Serial.println(prevAngle);
+//          Serial.print("tang");
+//          Serial.println(tang);
+//          double st = millis();
+//          while(!_chassis->turnVic(tang) &&  millis() - st < 2000)
+//            _chassis->readChassis();
            _chassis->runMotors(0);
+          for(int i = 0; i < 5; i++){
+              digitalWrite(9, HIGH);
+              delay(500);
+              digitalWrite(9, LOW);
+              delay(500);
+           }
+          digitalWrite(9, HIGH);
           for (int i = 0; i < num; i++) {
             leftServo();
           }
-         tang = _chassis->getYaw() * 180 / PI - 60;
+//         tang = _chassis->getYaw() * 180 / PI - 60;
      
-         while(!_chassis->turnVic(tang))
-           _chassis->readChassis();
-          _chassis->setCount(pL, pR);
-        }
-        delay(5000 - 2000 * (num != 0));
+//         while(!_chassis->turnVic(tang))
+//           _chassis->readChassis();
+//          _chassis->setCount(pL, pR);
+//        }
         digitalWrite(9, LOW);
  
       }
@@ -432,22 +447,30 @@ bool followPath() { //TODO: Add state machine for following
     double prevAngle = _chassis->getYaw() * 180 / PI;
     double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
     double tang;
-    tang = fmod(prevAngle + 60, 360);
-    Serial.print("prevAngle");
-    Serial.println(prevAngle);
-    Serial.print("tang");
-    Serial.println(tang);
-    double st = millis();
-    while(!_chassis->turnVic(tang) && millis() - st < 2000)
-      _chassis->readChassis();
+//    tang = fmod(prevAngle + 60, 360);
+//    Serial.print("prevAngle");
+//    Serial.println(prevAngle);
+//    Serial.print("tang");
+//    Serial.println(tang);
+//    double st = millis();
+    
+//    while(!_chassis->turnVic(tang) && millis() - st < 2000)
+//      _chassis->readChassis();
      _chassis->runMotors(0);
-    leftServo();
-    tang = _chassis->getYaw() * 180 / PI - 60;
 
-    while(!_chassis->turnVic(tang))
-      _chassis->readChassis();
-    _chassis->setCount(pL, pR);
-    delay(3000);
+    for(int i = 0; i < 5; i++){
+        digitalWrite(9, HIGH);
+        delay(500);
+        digitalWrite(9, LOW);
+        delay(500);
+     }
+    digitalWrite(9, HIGH);
+    leftServo();
+//    tang = _chassis->getYaw() * 180 / PI - 60;
+//
+//    while(!_chassis->turnVic(tang))
+//      _chassis->readChassis();
+//    _chassis->setCount(pL, pR);
     digitalWrite(9, LOW);
     prev_victim = true;
   }
@@ -461,24 +484,32 @@ bool followPath() { //TODO: Add state machine for following
 
     digitalWrite(9, HIGH);
     double prevAngle = _chassis->getYaw() * 180 / PI;
-    double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
-    double tang;
-    tang = fmod(prevAngle + 300, 360);
-    Serial.print("prevAngle: ");
-    Serial.println(prevAngle);
-    Serial.print("tang ");
-    Serial.println(tang);
-    double st = millis();
-    while(!_chassis->turnVic(tang) && millis() - st < 2000){
-      _chassis->readChassis();
-    }
+//    double pR = _chassis->getrEncCt(), pL = _chassis->getlEncCt();
+//    double tang;
+//    tang = fmod(prevAngle + 300, 360);
+//    Serial.print("prevAngle: ");
+//    Serial.println(prevAngle);
+//    Serial.print("tang ");
+//    Serial.println(tang);
+//    
+//    double st = millis();
+//    while(!_chassis->turnVic(tang) && millis() - st < 2000){
+//      _chassis->readChassis();
+//    }
      _chassis->runMotors(0);
-      rightServo();
-    while(!_chassis->turnVic(prevAngle)){
-      _chassis->readChassis();
-    }
-    _chassis->setCount(pL, pR);
-    delay(3000);
+     for(int i = 0; i < 5; i++){
+        digitalWrite(9, HIGH);
+        delay(500);
+        digitalWrite(9, LOW);
+        delay(500);
+     }
+    digitalWrite(9, HIGH);
+    rightServo();
+//    while(!_chassis->turnVic(prevAngle)){
+//      _chassis->readChassis();
+//    }
+//    _chassis->setCount(pL, pR);
+//    delay(3000);
     digitalWrite(9, LOW);
     prev_victim = true;
   }
@@ -492,8 +523,6 @@ bool followPath() { //TODO: Add state machine for following
         myTime = millis();
         startTime = millis();
         turnStep = 0;
-        if(skip != 0)
-            delay(300);
         break;
       }
     case FSTATE::TURNING: {
@@ -512,19 +541,22 @@ bool followPath() { //TODO: Add state machine for following
           _laser->readAll();
           angAdj = 0;
           //self-correction
-          double fe = TILE_SIZE + 30 + (path[step] == 'D') * 25;
+          double fe = TILE_SIZE + 35 + (path[step] == 'D') * 25;
           //        Serial.println(abs(_chassis->getPitch() - 5) * 180 / PI));
-          if (min(_laser->getDist(0), _laser->getDist(1)) < 500 && abs(_laser->getDist(0) - _laser->getDist(1)) < 100 && abs(_chassis->getPitch() * 180 / PI - 5)  <= 10) {
+          
+          if (min(_laser->getDist(0), _laser->getDist(1)) < 500 && abs(_laser->getDist(0) - _laser->getDist(1)) < 140 && abs(_chassis->getPitch() * 180 / PI - 5)  <= 5) {
             fe = fmod((min(_laser->getDist(0), _laser->getDist(1))), TILE_SIZE);
             if (fe > 150)
               fe -= 300;
-            fe += (TILE_SIZE) / 2 + 90;
+            fe += (TILE_SIZE) / 2 + 120;
           }
           if (_laser->getDist(2) < TILE_SIZE)
             angAdj =  -atan2(_laser->getDist(2) - 100, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
           if (_laser->getDist(3) < TILE_SIZE)
             angAdj =  atan2(_laser->getDist(3) - 135, (skip - step - 1) * (TILE_SIZE) + fe) * 180 / PI;
           forward = ((skip - step - 1) * (TILE_SIZE) + fe) / cos(PI / 180 * angAdj) ;
+//          if(forward < 100)
+//            forward += 300;
           _laser->print();
           Serial.println(forward);
           Serial.println(angAdj);
@@ -540,22 +572,16 @@ bool followPath() { //TODO: Add state machine for following
           _chassis->reset();
           fstate = FORWARD;
           myTime = millis();
+          fct = 0;
         }
         break;
       }
     case FSTATE::FORWARD: {
+      _laser->readAll();
         _chassis->updateEnc();
-        if (_chassis->getlEncCt() * encPerMm > 50) {
-          if (light <= silverThresh && blackcount == 0)
-            silvercount++;
-          else
-            silvercount = 0;
-          if (silvercount >= 5)
-            silver = true;
-        }
-        if (_chassis->goMm(forward) || (_laser->getDist(0) <= 65 && _laser->getDist(1) <= 65)) {
+        if (_chassis->goMm(forward) || (_laser->getDist(0) <= 55 && _laser->getDist(1) <= 55)) {
+          
           fstate = FORADJ;
-
         }
         break;
       }
@@ -568,6 +594,14 @@ bool followPath() { //TODO: Add state machine for following
           silvercount = 0;
           step = skip;
           _chassis->reset();
+//          if(forward < 150 && fct == 0){
+//            _chassis->reset();
+//            forward = 300;
+//            fct++;
+//            fstate = FORWARD;
+//            break;
+//          }
+          delay(300);
           if (step == path.length())
             return true;
         }

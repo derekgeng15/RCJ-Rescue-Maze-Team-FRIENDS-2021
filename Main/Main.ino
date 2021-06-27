@@ -1,3 +1,4 @@
+//Regular
 #include "ArduinoMaze.h"
 #include <MeMegaPi.h>
 
@@ -17,13 +18,14 @@ void test(String p){
 void setup()
 { 
  begin();
+// _laser->readAll();
 }
 void loop()
 {
   
 
   readSensors();
-//  test("UUD");
+//  test("FF");
   checkVictim();
   prevFunc();
   switch(state){
